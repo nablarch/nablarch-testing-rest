@@ -15,7 +15,11 @@ import nablarch.test.NablarchTestUtils;
 import nablarch.test.core.db.DbAccessTestSupport;
 import nablarch.test.core.rule.TestDescription;
 import nablarch.test.event.TestEventDispatcher;
+import org.json.JSONException;
+import org.junit.Before;
 import org.junit.Rule;
+import org.skyscreamer.jsonassert.JSONAssert;
+import org.skyscreamer.jsonassert.JSONCompareMode;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -29,8 +33,8 @@ import java.util.List;
 import java.util.Map;
 
 import static nablarch.core.util.Builder.concat;
+import static nablarch.test.Assertion.fail;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
 
 /**
  * RESTfulウェブサービス用のテストサポートクラス
@@ -74,18 +78,21 @@ public class RestTestSupport extends TestEventDispatcher {
         return requestBuilder;
     }
 
+    @Before
+    public void setUp() {
+        // HTTPテスト実行用設定情報の取得
+        RestTestConfiguration config = (RestTestConfiguration) SystemRepository.getObject(REST_TEST_CONFIGURATION_KEY);
+        initializeIfNotYet(config);
+        setUpDbIfNeed(testDescription.getMethodName(), config);
+    }
+
     /**
      * テストリクエストを内蔵サーバに渡しレスポンスを返す。
      *
      * @param request テストリクエスト
      * @return 内蔵サーバのレスポンス
      */
-    public HttpResponse execute(HttpRequest request) {
-        // HTTPテスト実行用設定情報の取得
-        RestTestConfiguration config = (RestTestConfiguration) SystemRepository.getObject(REST_TEST_CONFIGURATION_KEY);
-        initializeIfNotYet(config);
-        setUpDbIfNeed(testDescription.getMethodName(), config);
-
+    public HttpResponse sendRequest(HttpRequest request) {
         ExecutionContext context = new ExecutionContext();
         handler.setContext(context);
 
@@ -177,16 +184,6 @@ public class RestTestSupport extends TestEventDispatcher {
     }
 
     /**
-     * ステータスコードが想定通りであることを表明する。
-     *
-     * @param expected 期待する{@link HttpResponse.Status}
-     * @param response HTTPレスポンス
-     */
-    public void assertStatusCode(HttpResponse.Status expected, HttpResponse response) {
-        assertStatusCode(testDescription.getMethodName() + " [HTTP STATUS]", expected.getStatusCode(), response);
-    }
-
-    /**
      * ステータスコードが想定通りであることを表明する。<br/>
      * 内蔵サーバから戻り値で返却されたHTTPレスポンスがリダイレクトである場合、
      * ステータスコードが303または302であることを表明する。
@@ -223,18 +220,63 @@ public class RestTestSupport extends TestEventDispatcher {
     }
 
     /**
+     * レスポンスのJSONが想定通りであることを表明する。
+     * 期待値は、実行中のテストメソッド名から特定される。
+     * 比較モードは{@link JSONCompareMode#LENIENT}となるため
+     * 期待値にはない追加のフィールドがレスポンスにあってもエラーとならない。
+     *
+     * @param message  アサート失敗時のメッセージ
+     * @param response HTTPレスポンス
+     */
+    public void assertJsonResponse(String message, HttpResponse response) {
+        assertJsonResponse(message, testDescription.getMethodName() + ".json", response);
+    }
+
+    /**
+     * レスポンスのJSONが引数で渡されたファイルと一致することを表明する。
+     * 比較モードは{@link JSONCompareMode#LENIENT}となるため
+     * 期待値にはない追加のフィールドがレスポンスにあってもエラーとならない。
+     *
+     * @param message  アサート失敗時のメッセージ
+     * @param response HTTPレスポンス
+     */
+    public void assertJsonResponse(String message, String filename, HttpResponse response) {
+        assertJsonResponse(message, readTextResource(filename), response, JSONCompareMode.LENIENT);
+    }
+
+    /**
+     * 引数に渡された比較モードでレスポンスのJSONが想定通りであることを表明する。
+     * 期待値は、実行中のテストメソッド名から特定される。
+     *
+     * @param message     アサート失敗時のメッセージ
+     * @param response    HTTPレスポンス
+     * @param compareMode 比較モード
+     * @see JSONCompareMode
+     */
+    public void assertJsonResponse(String message, String expected, HttpResponse response, JSONCompareMode compareMode) {
+        try {
+            JSONAssert.assertEquals(message, expected, response.getBodyString(), compareMode);
+        } catch (JSONException e) {
+            fail(e);
+        }
+    }
+
+    /**
      * テストクラスと同じパッケージにあるファイルを読み込み文字列を返す。
      *
      * @param fileName 読み込むファイル名
      * @return ファイル内容の文字列
-     * @throws URISyntaxException URLからURIへの変換に失敗した場合に送出される例外
-     * @throws IOException        ファイル読み込みに失敗した場合に送出される例外
      */
-    protected String readFile(String fileName) throws URISyntaxException, IOException {
-        URL url = getUrl(testDescription.getTestClassSimpleName() + "/" + fileName);
-        Path path = Paths.get(url.toURI());
-        byte[] bytes = Files.readAllBytes(path);
-        return new String(bytes, StandardCharsets.UTF_8);
+    protected String readTextResource(String fileName) {
+        try {
+            URL url = getUrl(testDescription.getTestClassSimpleName() + "/" + fileName);
+            Path path = Paths.get(url.toURI());
+            byte[] bytes = Files.readAllBytes(path);
+            return new String(bytes, StandardCharsets.UTF_8);
+        } catch (URISyntaxException | IOException e) {
+            throw new IllegalArgumentException("couldn't read resource [" + fileName + "]. "
+                    + "cause [" + e.getMessage() + "].", e);
+        }
     }
 
     /**
@@ -247,7 +289,7 @@ public class RestTestSupport extends TestEventDispatcher {
     private URL getUrl(String fileName) {
         URL url = testDescription.getTestClass().getResource(fileName);
         if (url == null) {
-            fail("File(" + fileName + ") not found.");
+            throw new IllegalArgumentException("couldn't find resource [" + fileName + "].");
         }
         return url;
     }

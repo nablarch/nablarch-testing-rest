@@ -4,7 +4,7 @@ import java.io.IOException;
 import java.io.Writer;
 
 /**
- * {@link RestMockHttpRequest}のbodyを書き込むためのインターフェイス
+ * {@link RestMockHttpRequest}のbodyを書き込むためのインターフェイス。
  */
 public interface HttpBodyWriter {
 

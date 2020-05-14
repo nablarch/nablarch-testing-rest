@@ -6,14 +6,14 @@ import java.util.Collection;
 import java.util.Map;
 
 /**
- * RESTfulウェブサービステスト用の{@link HttpRequest}実装クラス
+ * RESTfulウェブサービステスト用の{@link HttpRequest}モッククラス。
  */
 public class RestMockHttpRequest extends MockHttpRequest {
 
     /** 改行文字 */
     private static final String LS = "\r\n";
 
-    /** bodyを書き出すための{@link HttpBodyWriter} */
+    /** bodyを書き出すために利用可能な{@link HttpBodyWriter} */
     private final Collection<? extends HttpBodyWriter> httpBodyWriters;
     /** デフォルトContent-Type */
     private final String defaultContentType;
@@ -21,7 +21,7 @@ public class RestMockHttpRequest extends MockHttpRequest {
     private Object body;
 
     /**
-     * 引数で渡されたHttpBodyWriterのCollectionとデフォルトContent-Typeを持つオブジェクトを生成する。
+     * 引数で渡された{@link HttpBodyWriter}の{@link Collection}とデフォルトContent-Typeを持つオブジェクトを生成する。
      *
      * @param httpBodyWriters    利用可能な{@link HttpBodyWriter}
      * @param defaultContentType デフォルトContent-Type
@@ -121,19 +121,17 @@ public class RestMockHttpRequest extends MockHttpRequest {
      * @return リクエストボディの文字列
      */
     private String convertBody() {
-        StringWriter bodyWriter = new StringWriter();
-        if (getContentType() != null) {
-            writeBody(bodyWriter);
-        } else if (body != null) {
-            throw new RuntimeException("there was no Content-Type header but body was not empty.");
-        }
-        try {
-            bodyWriter.close();
+        try (StringWriter bodyWriter = new StringWriter();) {
+            if (getContentType() != null) {
+                writeBody(bodyWriter);
+            } else if (body != null) {
+                throw new RuntimeException("there was no Content-Type header but body was not empty.");
+            }
+            bodyWriter.flush();
+            return bodyWriter.toString();
         } catch (IOException e) {
             throw new RuntimeException("an error occurred while Writer was being closed.", e);
         }
-
-        return bodyWriter.toString();
     }
 
     /**

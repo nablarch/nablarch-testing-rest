@@ -1,5 +1,8 @@
 package nablarch.test.core.http;
 
+/**
+ * RESTfulウェブサービス用テスト設定定義クラス。
+ */
 public class RestTestConfiguration extends HttpTestConfiguration {
     /** DBセットアップ設定 */
     private boolean shouldSetUpDb = false;
@@ -24,6 +27,6 @@ public class RestTestConfiguration extends HttpTestConfiguration {
 
     @Override
     public void setHtmlCheckerConfig(String htmlCheckerConfig) {
-        //NOP
+        //RESTのテストではHTMLチェックは行わない
     }
 }

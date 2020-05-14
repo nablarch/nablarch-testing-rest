@@ -6,8 +6,7 @@ import java.io.IOException;
 import java.io.Writer;
 
 /**
- * {@link Object}型のbodyを書き込むための{@link HttpBodyWriter}の実装クラス。
- * 対応するContent-Typeは"application/json"
+ * Jacksonを使用してbodyを書き込むための{@link HttpBodyWriter}実装クラス。
  */
 public class JacksonHttpBodyWriter implements HttpBodyWriter {
 
@@ -16,16 +15,11 @@ public class JacksonHttpBodyWriter implements HttpBodyWriter {
 
     @Override
     public boolean isWritable(Object body, String contentType) {
-        return contentType.equals("application/json");
+        return !(body instanceof String) && contentType.equals("application/json");
     }
 
     @Override
     public void write(Object body, String contentType, Writer out) throws IOException {
-        // JSON文字列として設定された場合はそのまま書き出す
-        if (body instanceof String) {
-            out.write((String) body);
-            return;
-        }
         objectMapper.writeValue(out, body);
     }
 }

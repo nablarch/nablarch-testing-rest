@@ -6,7 +6,7 @@ import nablarch.core.util.StringUtil;
 import java.util.Collection;
 
 /**
- * {@link RestMockHttpRequest}のビルダー
+ * {@link RestMockHttpRequest}のビルダークラス。
  */
 public class RestMockHttpRequestBuilder {
 
