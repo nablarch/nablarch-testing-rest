@@ -92,6 +92,9 @@ public class RestMockHttpRequest extends MockHttpRequest {
 
     @Override
     public String toString() {
+        if (body == null) {
+            return super.toString();
+        }
         String bodyStr = convertBody();
         getHeaderMap().put("Content-Length", String.valueOf(bodyStr.getBytes().length));
 

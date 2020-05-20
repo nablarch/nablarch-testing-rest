@@ -1,8 +1,6 @@
 package nablarch.fw.web;
 
-import nablarch.core.exception.IllegalConfigurationException;
-import nablarch.core.util.StringUtil;
-
+import java.util.Arrays;
 import java.util.Collection;
 
 /**
@@ -11,9 +9,12 @@ import java.util.Collection;
 public class RestMockHttpRequestBuilder {
 
     /** 利用可能な{@link HttpBodyWriter} */
-    private Collection<? extends HttpBodyWriter> httpBodyWriters;
+    private Collection<? extends HttpBodyWriter> httpBodyWriters = Arrays.asList(
+            new StringHttpBodyWriter()
+            , new JacksonHttpBodyWriter()
+    );
     /** デフォルトContent-Type */
-    private String defaultContentType;
+    private String defaultContentType = "application/json";
 
     /**
      * 引数で渡されたメソッド、URIで{@link RestMockHttpRequest}を生成する。
@@ -23,12 +24,6 @@ public class RestMockHttpRequestBuilder {
      * @return 生成された{@link RestMockHttpRequest}
      */
     private RestMockHttpRequest newRequest(String httpMethod, String uri) {
-        if (httpBodyWriters == null) {
-            throw new IllegalConfigurationException("httpBodyWriters has not been initialized.");
-        }
-        if (StringUtil.isNullOrEmpty(defaultContentType)) {
-            throw new IllegalConfigurationException("defaultContentType has not been initialized.");
-        }
         return new RestMockHttpRequest(httpBodyWriters, defaultContentType).setMethod(httpMethod)
                 .setRequestUri(uri);
     }
@@ -44,13 +39,33 @@ public class RestMockHttpRequestBuilder {
     }
 
     /**
-     * GETのHTTPメソッドで{@link RestMockHttpRequest}を生成する。
+     * POSTのHTTPメソッドで{@link RestMockHttpRequest}を生成する。
      *
      * @param uri リクエストURI
      * @return 生成された{@link RestMockHttpRequest}
      */
     public RestMockHttpRequest post(String uri) {
         return newRequest("POST", uri);
+    }
+
+    /**
+     * PUTのHTTPメソッドで{@link RestMockHttpRequest}を生成する。
+     *
+     * @param uri リクエストURI
+     * @return 生成された{@link RestMockHttpRequest}
+     */
+    public RestMockHttpRequest put(String uri) {
+        return newRequest("PUT", uri);
+    }
+
+    /**
+     * DELETEのHTTPメソッドで{@link RestMockHttpRequest}を生成する。
+     *
+     * @param uri リクエストURI
+     * @return 生成された{@link RestMockHttpRequest}
+     */
+    public RestMockHttpRequest delete(String uri) {
+        return newRequest("DELETE", uri);
     }
 
     /**
