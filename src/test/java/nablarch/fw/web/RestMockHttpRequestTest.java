@@ -80,10 +80,10 @@ public class RestMockHttpRequestTest {
     }
 
     @Test
-    public void testAbnormalColdNotFindBodyWriter() {
+    public void testAbnormalCouldNotFindBodyWriter() {
         expectedException.expect(RuntimeException.class);
         expectedException.expectMessage("unsupported media type requested. Content-Type = [ text/plain ]");
-        RestMockHttpRequest sut = new RestMockHttpRequest(Collections.emptyList(), "text/plain");
+        RestMockHttpRequest sut = new RestMockHttpRequest(Collections.singletonList(new NoContentWritableMockWriter()), "text/plain");
         sut.setBody("test body");
         sut.toString();
     }
@@ -109,6 +109,19 @@ public class RestMockHttpRequestTest {
         @Override
         public void write(Object body, String contentType, Writer out) throws IOException {
             throw new IOException("Writer");
+        }
+    }
+
+    private static class NoContentWritableMockWriter implements HttpBodyWriter {
+
+        @Override
+        public boolean isWritable(Object body, String contentType) {
+            return false;
+        }
+
+        @Override
+        public void write(Object body, String contentType, Writer out) throws IOException {
+            // NOP
         }
     }
 }
