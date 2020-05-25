@@ -44,7 +44,6 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static nablarch.core.util.Builder.concat;
-import static nablarch.test.Assertion.fail;
 import static org.junit.Assert.assertEquals;
 
 /**
@@ -237,7 +236,7 @@ public class RestTestSupport extends TestEventDispatcher {
      * @param response HTTPレスポンス
      */
     public void assertStatusCode(String message, int expected, HttpResponse response) {
-        assertEquals(message, expected, response.getStatusCode());
+        assertEquals(message + " [HTTP STATUS]", expected, response.getStatusCode());
     }
 
     /**
@@ -249,8 +248,8 @@ public class RestTestSupport extends TestEventDispatcher {
      * @param message  アサート失敗時のメッセージ
      * @param response HTTPレスポンス
      */
-    public void assertJsonResponse(String message, HttpResponse response) {
-        assertJsonResponse(message, testDescription.getMethodName() + ".json", response);
+    public void assertJsonEquals(String message, HttpResponse response) {
+        assertJsonEquals(message, testDescription.getMethodName() + ".json", response);
     }
 
     /**
@@ -261,8 +260,8 @@ public class RestTestSupport extends TestEventDispatcher {
      * @param message  アサート失敗時のメッセージ
      * @param response HTTPレスポンス
      */
-    public void assertJsonResponse(String message, String filename, HttpResponse response) {
-        assertJsonResponse(message, readTextResource(filename), response, JSONCompareMode.LENIENT);
+    public void assertJsonEquals(String message, String expectedFilename, HttpResponse response) {
+        assertJsonEquals(message, readTextResource(expectedFilename), response, JSONCompareMode.LENIENT);
     }
 
     /**
@@ -274,11 +273,11 @@ public class RestTestSupport extends TestEventDispatcher {
      * @param compareMode 比較モード
      * @see JSONCompareMode
      */
-    public void assertJsonResponse(String message, String expected, HttpResponse response, JSONCompareMode compareMode) {
+    public void assertJsonEquals(String message, String expected, HttpResponse response, JSONCompareMode compareMode) {
         try {
-            JSONAssert.assertEquals(message, expected, response.getBodyString(), compareMode);
+            JSONAssert.assertEquals(message + " [JSON]", expected, response.getBodyString(), compareMode);
         } catch (JSONException e) {
-            fail(e);
+            throw new RuntimeException(e);
         }
     }
 
@@ -422,7 +421,6 @@ public class RestTestSupport extends TestEventDispatcher {
                                   boolean failIfNoDataFound) throws IllegalArgumentException {
         dbSupport.assertTableEquals(message, sheetName, groupId, failIfNoDataFound);
     }
-
 
     private boolean testDataExists = true;
 
