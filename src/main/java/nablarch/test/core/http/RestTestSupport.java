@@ -23,11 +23,8 @@ import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.usermodel.WorkbookFactory;
-import org.json.JSONException;
 import org.junit.Before;
 import org.junit.Rule;
-import org.skyscreamer.jsonassert.JSONAssert;
-import org.skyscreamer.jsonassert.JSONCompareMode;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -55,7 +52,7 @@ public class RestTestSupport extends TestEventDispatcher {
     /** HTTPサーバファクトリのリポジトリキー */
     private static final String HTTP_SERVER_FACTORY_KEY = "httpServerFactory";
     /** RestTestConfigurationのリポジトリキー */
-    private static final String REST_TEST_CONFIGURATION_KEY = "restTestConfiguration";
+    private static final String HTTP_TEST_CONFIGURATION_KEY = "httpTestConfiguration";
     /** RestMockHttpRequestBuilderのリポジトリキー */
     private static final String HTTP_REQUEST_BUILDER_KEY = "restMockHttpRequestBuilder";
     /** TestDataParserのリポジトリキー */
@@ -97,7 +94,7 @@ public class RestTestSupport extends TestEventDispatcher {
     @Before
     public void setUp() {
         // HTTPテスト実行用設定情報の取得
-        RestTestConfiguration config = SystemRepository.get(REST_TEST_CONFIGURATION_KEY);
+        HttpTestConfiguration config = SystemRepository.get(HTTP_TEST_CONFIGURATION_KEY);
         initializeIfNotYet(config);
         setUpDbIfSheetExists(SETUP_TABLE_SHEET);
         setUpDbIfSheetExists(testDescription.getMethodName());
@@ -148,7 +145,7 @@ public class RestTestSupport extends TestEventDispatcher {
      *
      * @param config 設定定義
      */
-    private void initializeIfNotYet(RestTestConfiguration config) {
+    private void initializeIfNotYet(HttpTestConfiguration config) {
         if (!initialized) {
             createHttpServer(config);
             initialized = true;
@@ -174,7 +171,7 @@ public class RestTestSupport extends TestEventDispatcher {
      *
      * @param config 設定定義
      */
-    private void createHttpServer(RestTestConfiguration config) {
+    private void createHttpServer(HttpTestConfiguration config) {
         // HTTPサーバ生成
         server = createHttpServer();
         // HttpTestConfigurationの値を設定する
@@ -197,7 +194,7 @@ public class RestTestSupport extends TestEventDispatcher {
      * @param config 設定定義
      * @return Warベースパス
      */
-    private List<ResourceLocator> getWarBasePaths(RestTestConfiguration config) {
+    private List<ResourceLocator> getWarBasePaths(HttpTestConfiguration config) {
         String[] baseDirs = config.getWebBaseDir().split(",");
         return Arrays.stream(baseDirs)
                 .map(this::buildWarDirUri)
@@ -237,48 +234,6 @@ public class RestTestSupport extends TestEventDispatcher {
      */
     public void assertStatusCode(String message, int expected, HttpResponse response) {
         assertEquals(message + " [HTTP STATUS]", expected, response.getStatusCode());
-    }
-
-    /**
-     * レスポンスのJSONが想定通りであることを表明する。
-     * 期待値は、実行中のテストメソッド名から特定される。
-     * 比較モードは{@link JSONCompareMode#LENIENT}となるため
-     * 期待値にはない追加のフィールドがレスポンスにあってもエラーとならない。
-     *
-     * @param message  アサート失敗時のメッセージ
-     * @param response HTTPレスポンス
-     */
-    public void assertJsonEquals(String message, HttpResponse response) {
-        assertJsonEquals(message, testDescription.getMethodName() + ".json", response);
-    }
-
-    /**
-     * レスポンスのJSONが引数で渡されたファイルと一致することを表明する。
-     * 比較モードは{@link JSONCompareMode#LENIENT}となるため
-     * 期待値にはない追加のフィールドがレスポンスにあってもエラーとならない。
-     *
-     * @param message  アサート失敗時のメッセージ
-     * @param response HTTPレスポンス
-     */
-    public void assertJsonEquals(String message, String expectedFilename, HttpResponse response) {
-        assertJsonEquals(message, readTextResource(expectedFilename), response, JSONCompareMode.LENIENT);
-    }
-
-    /**
-     * 引数に渡された比較モードでレスポンスのJSONが想定通りであることを表明する。
-     * 期待値は、実行中のテストメソッド名から特定される。
-     *
-     * @param message     アサート失敗時のメッセージ
-     * @param response    HTTPレスポンス
-     * @param compareMode 比較モード
-     * @see JSONCompareMode
-     */
-    public void assertJsonEquals(String message, String expected, HttpResponse response, JSONCompareMode compareMode) {
-        try {
-            JSONAssert.assertEquals(message + " [JSON]", expected, response.getBodyString(), compareMode);
-        } catch (JSONException e) {
-            throw new RuntimeException(e);
-        }
     }
 
     /**
