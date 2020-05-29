@@ -15,7 +15,7 @@ public class JacksonHttpBodyWriter implements HttpBodyWriter {
 
     @Override
     public boolean isWritable(Object body, String contentType) {
-        return !(body instanceof String) && contentType.equals("application/json");
+        return !(body instanceof String) && contentType.toLowerCase().contains("application/json");
     }
 
     @Override

@@ -11,7 +11,8 @@ public class StringHttpBodyWriter implements HttpBodyWriter {
     @Override
     public boolean isWritable(Object body, String contentType) {
         return body instanceof String &&
-                (contentType.equals("text/plain") || contentType.equals("application/json"));
+                (contentType.toLowerCase().contains("text/plain")
+                        || contentType.toLowerCase().contains("application/json"));
     }
 
     @Override
