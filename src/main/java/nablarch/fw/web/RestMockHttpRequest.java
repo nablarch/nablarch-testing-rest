@@ -1,9 +1,16 @@
 package nablarch.fw.web;
 
+import nablarch.core.util.StringUtil;
+
 import java.io.IOException;
 import java.io.StringWriter;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * RESTfulウェブサービステスト用の{@link HttpRequest}モッククラス。
@@ -92,24 +99,38 @@ public class RestMockHttpRequest extends MockHttpRequest {
 
     @Override
     public String toString() {
-        if (body == null) {
-            return super.toString();
-        }
         String bodyStr = convertBody();
+        String encodedUri = urlEncode(getRequestUri());
+
+        Map<String, String[]> paramMap = getParamMap();
+        String encodedParams = encodeParams(paramMap);
+        if (StringUtil.hasValue(encodedParams)) {
+            if ("GET".equals(getMethod())) {
+                if (encodedUri.contains("?")) {
+                    encodedUri = encodedUri + "&" + encodedParams;
+                } else {
+                    encodedUri = encodedUri + "?" + encodedParams;
+                }
+            } else {
+                bodyStr = encodedParams;
+            }
+        }
         getHeaderMap().put("Content-Length", String.valueOf(bodyStr.getBytes().length));
 
         StringBuilder buffer = new StringBuilder();
-        buffer.append(getMethod());
-        buffer.append(' ');
-        buffer.append(getRequestUri());
-        buffer.append(' ');
-        buffer.append(getHttpVersion());
-        buffer.append(LS);
+        buffer.append(getMethod())
+                .append(' ')
+                .append(encodedUri)
+                .append(' ')
+                .append(getHttpVersion())
+                .append(LS);
 
-        for (Map.Entry<String, String> header : getHeaderMap().entrySet()) {
-            buffer.append(header.getKey());
-            buffer.append(": ");
-            buffer.append(header.getValue());
+
+        Map<String, String> headers = this.getHeaderMap();
+        for (Map.Entry<String, String> entry : headers.entrySet()) {
+            buffer.append(entry.getKey())
+                    .append(": ")
+                    .append(entry.getValue());
             buffer.append(LS);
         }
 
@@ -119,22 +140,112 @@ public class RestMockHttpRequest extends MockHttpRequest {
     }
 
     /**
+     * リクエストパラメータのMapをURLエンコードし結合する。
+     *
+     * @param paramMap リクエストパラメータ
+     * @return URLエンコードされ結合されたリクエストパラメータ
+     */
+    private String encodeParams(Map<String, String[]> paramMap) {
+        if (paramMap.isEmpty()) {
+            return "";
+        }
+        StringBuilder buffer = new StringBuilder();
+        Iterator<Map.Entry<String, String[]>> params = paramMap.entrySet().iterator();
+        while (params.hasNext()) {
+            Map.Entry<String, String[]> param = params.next();
+            String name = param.getKey();
+            String[] values = param.getValue();
+            for (int i = 0; i < values.length; i++) {
+                buffer.append(name)
+                        .append("=")
+                        .append(encode(values[i]));
+                if (i < values.length - 1) {
+                    buffer.append("&");
+                }
+            }
+            if (params.hasNext()) {
+                buffer.append("&");
+            }
+        }
+        return buffer.toString();
+    }
+
+    /** クエリストリングを持つURLの書式 */
+    public static final Pattern URI_PATTERN = Pattern.compile("(.*)\\?(.*)");
+
+    /**
+     * リクエストURIをURLエンコードする。
+     *
+     * @param uri リクエストURI
+     * @return URLエンコードされたリクエストURI
+     */
+    private String urlEncode(String uri) {
+        Matcher matcher = URI_PATTERN.matcher(uri);
+        if (matcher.find()) {
+            String queryString = matcher.group(2);
+            String[] params = queryString.split("&");
+
+            StringBuilder sb = new StringBuilder();
+            for (String param : params) {
+                if (sb.length() > 0) {
+                    sb.append("&");
+                }
+                sb.append(getEncodedParam(param));
+            }
+
+            return matcher.group(1) + "?" + sb.toString();
+        } else {
+            return uri;
+        }
+    }
+
+    /**
+     * "name=value"形式のリクエストパラメータをURLエンコードする。
+     *
+     * @param paramString エンコード対象のパラメータ
+     * @return URLエンコードされたパラメータ
+     */
+    private String getEncodedParam(String paramString) {
+        String[] param = paramString.split("=");
+        if (param.length != 2) {
+            throw new IllegalArgumentException(paramString + " must be name=value format.");
+        }
+        return param[0] + "=" + encode(param[1]);
+    }
+
+    /**
+     * UTF-8でURLエンコードする。
+     *
+     * @param value エンコード対象
+     * @return URLエンコードされた文字列
+     */
+    private String encode(String value) {
+        try {
+            return URLEncoder.encode(value, "UTF-8");
+        } catch (UnsupportedEncodingException e) {
+            throw new IllegalStateException("url encoding failed.", e);
+        }
+    }
+
+    /**
      * リクエストボディを{@link String}に変換する。
      *
      * @return リクエストボディの文字列
      */
     private String convertBody() {
-        try (StringWriter bodyWriter = new StringWriter();) {
-            if (getContentType() != null) {
-                writeBody(bodyWriter);
-            } else if (body != null) {
-                throw new RuntimeException("there was no Content-Type header but body was not empty.");
-            }
-            bodyWriter.flush();
-            return bodyWriter.toString();
+        StringWriter bodyWriter = new StringWriter();
+        if (getContentType() != null) {
+            writeBody(bodyWriter);
+        } else if (body != null) {
+            throw new RuntimeException("there was no Content-Type header but body was not empty.");
+        }
+        bodyWriter.flush();
+        try {
+            bodyWriter.close();
         } catch (IOException e) {
             throw new RuntimeException("an error occurred while Writer was being closed.", e);
         }
+        return bodyWriter.toString();
     }
 
     /**
