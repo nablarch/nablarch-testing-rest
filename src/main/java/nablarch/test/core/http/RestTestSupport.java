@@ -4,6 +4,7 @@ import nablarch.core.exception.IllegalConfigurationException;
 import nablarch.core.log.Logger;
 import nablarch.core.log.LoggerManager;
 import nablarch.core.repository.SystemRepository;
+import nablarch.core.util.FileUtil;
 import nablarch.core.util.StringUtil;
 import nablarch.fw.ExecutionContext;
 import nablarch.fw.Handler;
@@ -19,26 +20,24 @@ import nablarch.test.core.db.DbAccessTestSupport;
 import nablarch.test.core.reader.TestDataParser;
 import nablarch.test.core.rule.TestDescription;
 import nablarch.test.event.TestEventDispatcher;
-import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.usermodel.WorkbookFactory;
 import org.junit.Before;
 import org.junit.Rule;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
-import java.util.stream.Collectors;
 
 import static nablarch.core.util.Builder.concat;
 import static org.junit.Assert.assertEquals;
@@ -196,9 +195,11 @@ public class RestTestSupport extends TestEventDispatcher {
      */
     private List<ResourceLocator> getWarBasePaths(HttpTestConfiguration config) {
         String[] baseDirs = config.getWebBaseDir().split(",");
-        return Arrays.stream(baseDirs)
-                .map(this::buildWarDirUri)
-                .collect(Collectors.toList());
+        List<ResourceLocator> basePaths = new ArrayList<ResourceLocator>();
+        for (String dir : baseDirs) {
+            basePaths.add(buildWarDirUri(dir));
+        }
+        return basePaths;
     }
 
     /**
@@ -245,10 +246,35 @@ public class RestTestSupport extends TestEventDispatcher {
     protected String readTextResource(String fileName) {
         try {
             URL url = getUrl(testDescription.getTestClassSimpleName() + "/" + fileName);
-            Path path = Paths.get(url.toURI());
-            byte[] bytes = Files.readAllBytes(path);
-            return new String(bytes, StandardCharsets.UTF_8);
-        } catch (URISyntaxException | IOException e) {
+            File file = new File(url.toURI());
+            StringBuilder sb = new StringBuilder();
+            InputStream is = null;
+            Reader r = null;
+            BufferedReader br = null;
+            try {
+                is = new FileInputStream(file);
+                r = new InputStreamReader(is, "UTF-8");
+                br = new BufferedReader(r);
+                String text;
+                while ((text = br.readLine()) != null) {
+                    sb.append(text);
+                }
+            } finally {
+                if (br != null) {
+                    br.close();
+                }
+                if (r != null) {
+                    r.close();
+                }
+                if (is != null) {
+                    is.close();
+                }
+            }
+            return sb.toString();
+        } catch (URISyntaxException e) {
+            throw new IllegalArgumentException("couldn't read resource [" + fileName + "]. "
+                    + "cause [" + e.getMessage() + "].", e);
+        } catch (IOException e) {
             throw new IllegalArgumentException("couldn't read resource [" + fileName + "]. "
                     + "cause [" + e.getMessage() + "].", e);
         }
@@ -390,13 +416,12 @@ public class RestTestSupport extends TestEventDispatcher {
             return false;
         }
         String resourceName = getResourceName(sheetName);
-        Optional<String> pathOpt = getPathOf(resourceName);
-        if (!pathOpt.isPresent()) {
+        String path = getPathOf(resourceName);
+        if (path == null) {
             testDataExists = false;
             return false;
         }
-        Optional<Sheet> sheetOpt = pathOpt.map(path -> getSheet(path, sheetName));
-        return sheetOpt.isPresent();
+        return getSheet(path, sheetName) != null;
     }
 
     /**
@@ -406,12 +431,25 @@ public class RestTestSupport extends TestEventDispatcher {
      * @param resourceName リソース名
      * @return テストデータのパス
      */
-    private Optional<String> getPathOf(String resourceName) {
+    private String getPathOf(String resourceName) {
         List<String> baseDirs = getTestDataPaths();
-        TestDataParser testDataParser = getTestDataParser();
-        return baseDirs.stream()
-                .filter(basePath -> testDataParser.isResourceExisting(basePath, resourceName))
-                .findFirst();
+        return getPathResourceExisting(baseDirs, resourceName);
+    }
+
+    /**
+     * リソースが存在するパスを取得する。
+     *
+     * @param candidatePath 候補となるパス群
+     * @param resourceName  リソース名
+     * @return リソースが存在するパス（存在しない場合、null）
+     */
+    String getPathResourceExisting(List<String> candidatePath, String resourceName) {
+        for (String basePath : candidatePath) {
+            if (getTestDataParser().isResourceExisting(basePath, resourceName)) {
+                return basePath;
+            }
+        }
+        return null;
     }
 
     /**
@@ -424,16 +462,23 @@ public class RestTestSupport extends TestEventDispatcher {
      */
     private Sheet getSheet(String basePath, String sheetName) {
         String filePath = basePath + '/' + testDescription.getTestClassSimpleName();
-        Path path = Paths.get(filePath + ".xlsx");
-        if (Files.notExists(path)) {
-            path = Paths.get(filePath + ".xls");
+        File file = new File(filePath + ".xlsx");
+        if (!file.exists()) {
+            file = new File(filePath + ".xls");
         }
-        try (InputStream in = Files.newInputStream(path)) {
-            Workbook book = WorkbookFactory.create(in);
-            return book.getSheet(sheetName);
-        } catch (IOException | InvalidFormatException e) {
+        String absoluteFilePath = file.getAbsolutePath();
+        Workbook book;
+        InputStream in = null;
+        try {
+            String uri = new File(absoluteFilePath).toURI().toString();
+            in = FileUtil.getResource(uri);
+            book = WorkbookFactory.create(in);
+        } catch (Exception e) {
             throw new RuntimeException("test data file open failed.", e);
+        } finally {
+            FileUtil.closeQuietly(in);
         }
+        return book.getSheet(sheetName);
     }
 
     /**
@@ -463,9 +508,11 @@ public class RestTestSupport extends TestEventDispatcher {
     private List<String> getTestDataPaths() {
         String[] baseDirs = getResourceRootSetting().split(PATH_SEPARATOR);
         String relativePath = packageToPath(testDescription.getTestClass());
-        return Arrays.stream(baseDirs)
-                .map(dir -> dir + '/' + relativePath)
-                .collect(Collectors.toList());
+        List<String> testDataPaths = new ArrayList<String>(baseDirs.length);
+        for (String baseDir : baseDirs) {
+            testDataPaths.add(baseDir + '/' + relativePath);
+        }
+        return testDataPaths;
     }
 
     /**

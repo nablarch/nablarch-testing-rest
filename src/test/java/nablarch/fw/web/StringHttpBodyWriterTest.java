@@ -34,8 +34,10 @@ public class StringHttpBodyWriterTest {
     public void writeTest() {
         String body = "test body";
         String contentTypePlain = "text/plain";
-        try (StringWriter writer = new StringWriter()) {
+        StringWriter writer = new StringWriter();
+        try {
             sut.write(body, contentTypePlain, writer);
+            writer.close();
             assertEquals(body, writer.toString());
         } catch (IOException e) {
             fail(e);

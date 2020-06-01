@@ -22,18 +22,20 @@ public class RestMockHttpRequestBuilderTest {
             writersField.setAccessible(true);
             List<HttpBodyWriter> defaultList = (List<HttpBodyWriter>) writersField.get(sut);
             assertEquals(2, defaultList.size());
-            defaultList.forEach(writer -> {
+            for (HttpBodyWriter writer : defaultList) {
                 if (!(writer instanceof StringHttpBodyWriter)
                         && !(writer instanceof JacksonHttpBodyWriter)) {
                     fail("default HttpBodyWriter list has unknown Writer.");
                 }
-            });
+            }
 
             List<HttpBodyWriter> bodyWriters = Arrays.asList(new StringHttpBodyWriter(), new JacksonHttpBodyWriter());
             sut.setHttpBodyWriters(bodyWriters);
             List<HttpBodyWriter> actual = (List<HttpBodyWriter>) writersField.get(sut);
             assertThat(actual, is(bodyWriters));
-        } catch (NoSuchFieldException | IllegalAccessException e) {
+        } catch (IllegalAccessException e) {
+            fail(e);
+        } catch (NoSuchFieldException e) {
             fail(e);
         }
     }
@@ -50,7 +52,9 @@ public class RestMockHttpRequestBuilderTest {
             String textPlain = (String) defaultContentTypeField.get(sut);
             assertThat(textPlain, is("text/plain"));
 
-        } catch (NoSuchFieldException | IllegalAccessException e) {
+        } catch (IllegalAccessException e) {
+            fail(e);
+        } catch (NoSuchFieldException e) {
             fail(e);
         }
     }
