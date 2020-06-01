@@ -1,5 +1,6 @@
 package nablarch.fw.web;
 
+import com.fasterxml.jackson.core.json.JsonWriteFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.io.IOException;
@@ -11,7 +12,12 @@ import java.io.Writer;
 public class JacksonHttpBodyWriter implements HttpBodyWriter {
 
     /** {@link ObjectMapper} */
-    private final ObjectMapper objectMapper = new ObjectMapper();
+    private final ObjectMapper objectMapper;
+
+    public JacksonHttpBodyWriter() {
+        objectMapper = new ObjectMapper();
+        objectMapper.getFactory().configure(JsonWriteFeature.ESCAPE_NON_ASCII.mappedFeature(), true);
+    }
 
     @Override
     public boolean isWritable(Object body, String contentType) {

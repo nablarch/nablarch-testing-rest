@@ -34,9 +34,25 @@ public class JacksonHttpBodyWriterTest {
     public void writeTest() {
         TestDto dto = new TestDto("test body");
         String contentTypeJson = "application/json";
-        try (StringWriter writer = new StringWriter()) {
+        StringWriter writer = new StringWriter();
+        try {
             sut.write(dto, contentTypeJson, writer);
+            writer.close();
             assertEquals("{\"field\":\"test body\"}", writer.toString());
+        } catch (IOException e) {
+            fail(e);
+        }
+    }
+
+    @Test
+    public void writeEscapeNonAsciiTest() {
+        TestDto dto = new TestDto("テスト");
+        String contentTypeJson = "application/json";
+        StringWriter writer = new StringWriter();
+        try {
+            sut.write(dto, contentTypeJson, writer);
+            writer.close();
+            assertEquals("{\"field\":\"\\u30C6\\u30B9\\u30C8\"}", writer.toString());
         } catch (IOException e) {
             fail(e);
         }
