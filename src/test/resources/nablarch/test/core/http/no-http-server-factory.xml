@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component-configuration
+    xmlns="http://tis.co.jp/nablarch/component-configuration"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://tis.co.jp/nablarch/component-configuration https://nablarch.github.io/schema/component-configuration.xsd">
+
+  <!-- テスティングフレームワークの設定 -->
+  <import file="nablarch/test/test-data.xml"/>
+  <import file="nablarch/test/rest-request-test.xml"/>
+  <import file="nablarch/core/date_test.xml"/>
+
+  <import file="db-default.xml"/>
+  <!-- DBの接続設定を定義する -->
+  <component name="dbInfo" class="nablarch.test.core.db.GenericJdbcDbInfo">
+    <property name="dataSource" ref="dataSource"/>
+    <property name="schema" value="PUBLIC"/>
+  </component>
+  <!-- DbManagerの設定 -->
+  <component name="testFwTran"
+             class="nablarch.core.db.transaction.SimpleDbTransactionManager">
+    <property name="dbTransactionName" value="test-fw"/>
+    <property name="connectionFactory" ref="connectionFactory"/>
+    <property name="transactionFactory" ref="jdbcTransactionFactory"/>
+  </component>
+
+  <component name="testTran"
+             class="nablarch.core.db.transaction.SimpleDbTransactionManager">
+    <property name="dbTransactionName" value="test"/>
+    <property name="connectionFactory" ref="connectionFactory"/>
+    <property name="transactionFactory" ref="jdbcTransactionFactory"/>
+  </component>
+
+  <!-- テスト用HttpServerにJetty6を定義する -->
+  <!--  <component name="httpServerFactory" class="nablarch.fw.web.httpserver.HttpServerFactoryJetty6"/>-->
+  <component name="httpTestConfiguration"
+             class="nablarch.test.core.http.HttpTestConfiguration">
+    <property name="webBaseDir" value="src/test/web"/>
+  </component>
+
+
+  <component name="webFrontController"
+             class="nablarch.fw.web.servlet.WebFrontController">
+    <property name="handlerQueue">
+      <list>
+        <component class="nablarch.fw.handler.GlobalErrorHandler"/>
+        <component class="nablarch.fw.jaxrs.JaxRsResponseHandler"/>
+        <component class="nablarch.fw.test.NormalResponseHandler"/>
+      </list>
+    </property>
+  </component>
+
+</component-configuration>

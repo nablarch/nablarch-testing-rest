@@ -5,7 +5,6 @@ import nablarch.core.log.Logger;
 import nablarch.core.log.LoggerManager;
 import nablarch.core.repository.SystemRepository;
 import nablarch.core.util.FileUtil;
-import nablarch.core.util.StringUtil;
 import nablarch.fw.ExecutionContext;
 import nablarch.fw.Handler;
 import nablarch.fw.web.HttpRequest;
@@ -26,13 +25,11 @@ import org.apache.poi.ss.usermodel.WorkbookFactory;
 import org.junit.Before;
 import org.junit.Rule;
 
-import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.Reader;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -152,6 +149,19 @@ public class RestTestSupport extends TestEventDispatcher {
     }
 
     /**
+     * キャッシュした HttpServer をリセットする。
+     */
+    public static void resetHttpServer() {
+        if (initialized) {
+            server = null;
+            WebFrontController controller = SystemRepository.get("webFrontController");
+            List<Handler> handlerQueue = controller.getHandlerQueue();
+            handlerQueue.remove(0);
+            initialized = false;
+        }
+    }
+
+    /**
      * DBセットアップを実行する。
      *
      * @param sheetName セットアップ対象データの記載されたシート名
@@ -247,36 +257,41 @@ public class RestTestSupport extends TestEventDispatcher {
         try {
             URL url = getUrl(testDescription.getTestClassSimpleName() + "/" + fileName);
             File file = new File(url.toURI());
-            StringBuilder sb = new StringBuilder();
-            InputStream is = null;
-            Reader r = null;
-            BufferedReader br = null;
-            try {
-                is = new FileInputStream(file);
-                r = new InputStreamReader(is, "UTF-8");
-                br = new BufferedReader(r);
-                String text;
-                while ((text = br.readLine()) != null) {
-                    sb.append(text);
-                }
-            } finally {
-                if (br != null) {
-                    br.close();
-                }
-                if (r != null) {
-                    r.close();
-                }
-                if (is != null) {
-                    is.close();
-                }
-            }
-            return sb.toString();
+            return read(file);
         } catch (URISyntaxException e) {
             throw new IllegalArgumentException("couldn't read resource [" + fileName + "]. "
                     + "cause [" + e.getMessage() + "].", e);
         } catch (IOException e) {
             throw new IllegalArgumentException("couldn't read resource [" + fileName + "]. "
                     + "cause [" + e.getMessage() + "].", e);
+        }
+    }
+
+    /**
+     * ファイルを読み込みStringを返す。
+     *
+     * @param file 読み込むファイル
+     * @return ファイル内容の文字列
+     * @throws IOException 読み込み失敗時の例外
+     */
+    protected String read(File file) throws IOException {
+        InputStream is = null;
+        ByteArrayOutputStream out = null;
+
+        try {
+            is = new FileInputStream(file);
+            out = new ByteArrayOutputStream();
+
+            byte[] buffer = new byte[8192];
+            int length;
+            while ((length = is.read(buffer)) != -1) {
+                out.write(buffer, 0, length);
+            }
+
+            return new String(out.toByteArray(), "UTF-8");
+        } finally {
+            FileUtil.closeQuietly(is);
+            FileUtil.closeQuietly(out);
         }
     }
 
@@ -443,7 +458,7 @@ public class RestTestSupport extends TestEventDispatcher {
      * @param resourceName  リソース名
      * @return リソースが存在するパス（存在しない場合、null）
      */
-    String getPathResourceExisting(List<String> candidatePath, String resourceName) {
+    private String getPathResourceExisting(List<String> candidatePath, String resourceName) {
         for (String basePath : candidatePath) {
             if (getTestDataParser().isResourceExisting(basePath, resourceName)) {
                 return basePath;
@@ -487,10 +502,7 @@ public class RestTestSupport extends TestEventDispatcher {
      * @param sheetName シート名
      * @return リソース名
      */
-    public String getResourceName(String sheetName) {
-        if (StringUtil.isNullOrEmpty(sheetName)) {
-            throw new IllegalArgumentException("sheetName must not be null or empty.");
-        }
+    private String getResourceName(String sheetName) {
         return testDescription.getTestClassSimpleName() + "/" + sheetName;
     }
 
