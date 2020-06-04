@@ -4,6 +4,7 @@ import org.junit.Test;
 
 import java.lang.reflect.Field;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 
 import static nablarch.test.Assertion.fail;
@@ -12,9 +13,19 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 
+/**
+ * {@link RestMockHttpRequestBuilder}のテストクラス。
+ */
 public class RestMockHttpRequestBuilderTest {
+    /** テスト対象 */
     RestMockHttpRequestBuilder sut = new RestMockHttpRequestBuilder();
 
+    /**
+     * 利用可能な{@link HttpBodyWriter}のテスト。
+     * デフォルトでは{@link StringHttpBodyWriter}と{@link JacksonHttpBodyWriter}を持つこと
+     * {@link RestMockHttpRequestBuilder#setHttpBodyWriters(Collection)}で
+     * httpBodyWritersが設定できることを確認する。
+     */
     @Test
     public void bodyWriterTest() {
         try {
@@ -40,6 +51,12 @@ public class RestMockHttpRequestBuilderTest {
         }
     }
 
+    /**
+     * デフォルトContent-Typeのテスト。
+     * 未設定の場合デフォルトが"application/json"であること、
+     * {@link RestMockHttpRequestBuilder#setDefaultContentType(String)}で
+     * 設定できることを確認する。
+     */
     @Test
     public void defaultContentTypeTest() {
         try {
@@ -59,6 +76,13 @@ public class RestMockHttpRequestBuilderTest {
         }
     }
 
+    /**
+     * {@link RestMockHttpRequestBuilder#get(String)}
+     * {@link RestMockHttpRequestBuilder#post(String)}
+     * {@link RestMockHttpRequestBuilder#put(String)}
+     * {@link RestMockHttpRequestBuilder#delete(String)}
+     * でそれぞれに対応する{@link RestMockHttpRequest}が生成されることを確認する。
+     */
     @Test
     public void newRequestTest() {
         RestMockHttpRequest getReq = sut.get("test");
