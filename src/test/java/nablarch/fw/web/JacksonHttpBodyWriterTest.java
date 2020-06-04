@@ -57,7 +57,7 @@ public class JacksonHttpBodyWriterTest {
         try {
             sut.write(dto, contentTypeJson, writer);
             writer.close();
-            assertEquals("{\"field\":\"test body\",\"camelCase\":\"value\"}", writer.toString());
+            assertEquals("{\"field\":\"test body\",\"propertyName\":\"value\"}", writer.toString());
         } catch (IOException e) {
             fail(e);
         }
@@ -70,13 +70,13 @@ public class JacksonHttpBodyWriterTest {
      */
     @Test
     public void writeEscapeNonAsciiTest() {
-        TestDto dto = new TestDto("テスト");
+        TestDto dto = new TestDto("テスト", "バリュー");
         String contentTypeJson = "application/json";
         StringWriter writer = new StringWriter();
         try {
             sut.write(dto, contentTypeJson, writer);
             writer.close();
-            assertEquals("{\"field\":\"\\u30C6\\u30B9\\u30C8\"}", writer.toString());
+            assertEquals("{\"field\":\"\\u30C6\\u30B9\\u30C8\",\"propertyName\":\"\\u30D0\\u30EA\\u30E5\\u30FC\"}", writer.toString());
         } catch (IOException e) {
             fail(e);
         }
@@ -101,7 +101,7 @@ public class JacksonHttpBodyWriterTest {
         try {
             snakeCaseWriter.write(dto, contentTypeJson, writer);
             writer.close();
-            assertEquals("{\"field\":\"test body\",\"camel_case\":\"value\"}", writer.toString());
+            assertEquals("{\"field\":\"test body\",\"property_name\":\"value\"}", writer.toString());
         } catch (IOException e) {
             fail(e);
         }
@@ -117,12 +117,12 @@ public class JacksonHttpBodyWriterTest {
 
         public TestDto(String field, String camelCase) {
             this.field = field;
-            this.camelCase = camelCase;
+            this.propertyName = camelCase;
         }
 
         private String field;
 
-        private String camelCase;
+        private String propertyName;
 
         public String getField() {
             return field;
@@ -132,12 +132,12 @@ public class JacksonHttpBodyWriterTest {
             this.field = field;
         }
 
-        public String getCamelCase() {
-            return camelCase;
+        public String getPropertyName() {
+            return propertyName;
         }
 
-        public void setCamelCase(String camelCase) {
-            this.camelCase = camelCase;
+        public void setPropertyName(String propertyName) {
+            this.propertyName = propertyName;
         }
     }
 }
