@@ -1,5 +1,7 @@
 package nablarch.fw.web;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -15,7 +17,7 @@ import static org.junit.Assert.assertTrue;
  * {@link JacksonHttpBodyWriter}のテストクラス。
  */
 public class JacksonHttpBodyWriterTest {
-    JacksonHttpBodyWriter sut = new JacksonHttpBodyWriter();
+    private final JacksonHttpBodyWriter sut = new JacksonHttpBodyWriter();
 
     /**
      * {@link JacksonHttpBodyWriter#isWritable(Object, String)}のテスト。
@@ -49,13 +51,13 @@ public class JacksonHttpBodyWriterTest {
      */
     @Test
     public void writeTest() {
-        TestDto dto = new TestDto("test body");
+        TestDto dto = new TestDto("test body", "value");
         String contentTypeJson = "application/json";
         StringWriter writer = new StringWriter();
         try {
             sut.write(dto, contentTypeJson, writer);
             writer.close();
-            assertEquals("{\"field\":\"test body\"}", writer.toString());
+            assertEquals("{\"field\":\"test body\",\"camelCase\":\"value\"}", writer.toString());
         } catch (IOException e) {
             fail(e);
         }
@@ -81,6 +83,31 @@ public class JacksonHttpBodyWriterTest {
     }
 
     /**
+     * {@link JacksonHttpBodyWriter#configure(ObjectMapper)}のテスト。
+     * ObjectMapperの設定を切り替えられることを確認する。
+     */
+    @Test
+    public void configureTest() {
+        JacksonHttpBodyWriter snakeCaseWriter = new JacksonHttpBodyWriter() {
+            @Override
+            protected void configure(ObjectMapper objectMapper) {
+                super.configure(objectMapper);
+                objectMapper.setPropertyNamingStrategy(PropertyNamingStrategy.SNAKE_CASE);
+            }
+        };
+        TestDto dto = new TestDto("test body", "value");
+        String contentTypeJson = "application/json";
+        StringWriter writer = new StringWriter();
+        try {
+            snakeCaseWriter.write(dto, contentTypeJson, writer);
+            writer.close();
+            assertEquals("{\"field\":\"test body\",\"camel_case\":\"value\"}", writer.toString());
+        } catch (IOException e) {
+            fail(e);
+        }
+    }
+
+    /**
      * テスト用DTO
      */
     private static class TestDto {
@@ -88,7 +115,14 @@ public class JacksonHttpBodyWriterTest {
             this.field = field;
         }
 
+        public TestDto(String field, String camelCase) {
+            this.field = field;
+            this.camelCase = camelCase;
+        }
+
         private String field;
+
+        private String camelCase;
 
         public String getField() {
             return field;
@@ -96,6 +130,14 @@ public class JacksonHttpBodyWriterTest {
 
         public void setField(String field) {
             this.field = field;
+        }
+
+        public String getCamelCase() {
+            return camelCase;
+        }
+
+        public void setCamelCase(String camelCase) {
+            this.camelCase = camelCase;
         }
     }
 }

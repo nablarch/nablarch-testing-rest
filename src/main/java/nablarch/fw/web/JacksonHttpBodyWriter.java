@@ -16,10 +16,19 @@ public class JacksonHttpBodyWriter implements HttpBodyWriter {
 
     /**
      * コンストラクタ。
-     * ObjectMapperをASCII文字以外であればエスケープするよう設定
      */
     public JacksonHttpBodyWriter() {
         objectMapper = new ObjectMapper();
+        configure(objectMapper);
+    }
+
+    /**
+     * {@link ObjectMapper}に対するオプション設定などを行う。
+     * このクラスではNON_ASCII文字のエスケープ設定を行う。
+     *
+     * @param objectMapper {@link ObjectMapper}
+     */
+    protected void configure(ObjectMapper objectMapper) {
         objectMapper.getFactory().configure(JsonWriteFeature.ESCAPE_NON_ASCII.mappedFeature(), true);
     }
 
