@@ -2,15 +2,12 @@ package nablarch.fw.web;
 
 import nablarch.core.util.StringUtil;
 
-import java.io.IOException;
-import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * RESTfulウェブサービステスト用の{@link HttpRequest}モッククラス。
@@ -67,8 +64,12 @@ public class RestMockHttpRequest extends MockHttpRequest {
      *
      * @return Content-Type
      */
-    public String getContentType() {
-        return getHeader("Content-Type");
+    public ContentType getContentType() {
+        String rawContentType = getHeader("Content-Type");
+        if (StringUtil.hasValue(rawContentType)) {
+            return new ContentType(rawContentType);
+        }
+        return null;
     }
 
     /**
@@ -99,11 +100,16 @@ public class RestMockHttpRequest extends MockHttpRequest {
 
     @Override
     public String toString() {
-        String bodyStr = convertBody();
-        String encodedUri = urlEncode(getRequestUri());
-
         Map<String, String[]> paramMap = getParamMap();
+
+        if (body != null && !paramMap.isEmpty()) {
+            throw new IllegalStateException("set only one of paramMap or body.");
+        }
+
+        String encodedUri = urlEncode(getRequestUri());
         String encodedParams = encodeParams(paramMap);
+        String bodyStr = convertBody();
+
         if (StringUtil.hasValue(encodedParams)) {
             if ("GET".equals(getMethod())) {
                 if (encodedUri.contains("?")) {
@@ -115,7 +121,11 @@ public class RestMockHttpRequest extends MockHttpRequest {
                 bodyStr = encodedParams;
             }
         }
-        getHeaderMap().put("Content-Length", String.valueOf(bodyStr.getBytes().length));
+
+        int contentLength = bodyStr.getBytes().length;
+        if (contentLength > 0) {
+            getHeaderMap().put("Content-Length", String.valueOf(contentLength));
+        }
 
         StringBuilder buffer = new StringBuilder();
         buffer.append(getMethod())
@@ -154,12 +164,12 @@ public class RestMockHttpRequest extends MockHttpRequest {
         while (params.hasNext()) {
             Map.Entry<String, String[]> param = params.next();
             String name = param.getKey();
-            String[] values = param.getValue();
-            for (int i = 0; i < values.length; i++) {
+            Iterator<String> values = Arrays.asList(param.getValue()).iterator();
+            while (values.hasNext()) {
                 buffer.append(name)
                         .append("=")
-                        .append(encode(values[i]));
-                if (i < values.length - 1) {
+                        .append(encode(values.next()));
+                if (values.hasNext()) {
                     buffer.append("&");
                 }
             }
@@ -170,9 +180,6 @@ public class RestMockHttpRequest extends MockHttpRequest {
         return buffer.toString();
     }
 
-    /** クエリストリングを持つURLの書式 */
-    public static final Pattern URI_PATTERN = Pattern.compile("(.*)\\?(.*)");
-
     /**
      * リクエストURIをURLエンコードする。
      *
@@ -180,23 +187,23 @@ public class RestMockHttpRequest extends MockHttpRequest {
      * @return URLエンコードされたリクエストURI
      */
     private String urlEncode(String uri) {
-        Matcher matcher = URI_PATTERN.matcher(uri);
-        if (matcher.find()) {
-            String queryString = matcher.group(2);
-            String[] params = queryString.split("&");
-
-            StringBuilder sb = new StringBuilder();
-            for (String param : params) {
-                if (sb.length() > 0) {
-                    sb.append("&");
-                }
-                sb.append(getEncodedParam(param));
-            }
-
-            return matcher.group(1) + "?" + sb.toString();
-        } else {
+        int index = uri.indexOf("?");
+        if (index == -1) {
             return uri;
         }
+        String requestPath = uri.substring(0, index);
+
+        String queryString = uri.substring(index + 1);
+        String[] params = queryString.split("&");
+        StringBuilder sb = new StringBuilder();
+        for (String param : params) {
+            if (sb.length() > 0) {
+                sb.append("&");
+            }
+            sb.append(getEncodedParam(param));
+        }
+
+        return requestPath + "?" + sb.toString();
     }
 
     /**
@@ -233,32 +240,14 @@ public class RestMockHttpRequest extends MockHttpRequest {
      * @return リクエストボディの文字列
      */
     private String convertBody() {
-        StringWriter bodyWriter = new StringWriter();
-        if (getContentType() != null) {
-            writeBody(bodyWriter);
+        ContentType contentType = getContentType();
+        if (contentType != null) {
+            HttpBodyWriter detectedHttpBodyWriter = findHttpBodyWriter(contentType);
+            return detectedHttpBodyWriter.writeValueAsString(body, contentType);
         } else if (body != null) {
             throw new RuntimeException("there was no Content-Type header but body was not empty.");
-        }
-        bodyWriter.flush();
-        try {
-            bodyWriter.close();
-        } catch (IOException e) {
-            throw new RuntimeException("an error occurred while Writer was being closed.", e);
-        }
-        return bodyWriter.toString();
-    }
-
-    /**
-     * {@link StringWriter}にボディを書き込む。
-     *
-     * @param bodyWriter 書き込み対象
-     */
-    private void writeBody(StringWriter bodyWriter) {
-        HttpBodyWriter detectedHttpBodyWriter = findHttpBodyWriter();
-        try {
-            detectedHttpBodyWriter.write(body, getContentType(), bodyWriter);
-        } catch (IOException e) {
-            throw new RuntimeException("an error occurred while Writer was writing body.", e);
+        } else {
+            return "";
         }
     }
 
@@ -267,12 +256,12 @@ public class RestMockHttpRequest extends MockHttpRequest {
      *
      * @return 見つかった{@link HttpBodyWriter}
      */
-    private HttpBodyWriter findHttpBodyWriter() {
+    private HttpBodyWriter findHttpBodyWriter(ContentType contentType) {
         for (HttpBodyWriter httpBodyWriter : httpBodyWriters) {
-            if (httpBodyWriter.isWritable(body, getContentType())) {
+            if (httpBodyWriter.isWritable(body, contentType)) {
                 return httpBodyWriter;
             }
         }
-        throw new RuntimeException("unsupported media type requested. Content-Type = [ " + getContentType() + " ]");
+        throw new RuntimeException("unsupported media type requested. Content-Type = [ " + contentType + " ]");
     }
 }

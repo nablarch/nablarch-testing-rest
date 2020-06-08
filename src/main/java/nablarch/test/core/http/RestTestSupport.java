@@ -36,7 +36,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import static nablarch.core.util.Builder.concat;
 import static org.junit.Assert.assertEquals;
 
 /**
@@ -104,9 +103,9 @@ public class RestTestSupport extends TestEventDispatcher {
     public RestMockHttpRequestBuilder getHttpRequestBuilder() {
         RestMockHttpRequestBuilder requestBuilder = SystemRepository.get(HTTP_REQUEST_BUILDER_KEY);
         if (requestBuilder == null) {
-            throw new IllegalArgumentException(concat(
-                    "can't get RestMockHttpRequestBuilder from SystemRepository. ",
-                    "check configuration. key=[", HTTP_REQUEST_BUILDER_KEY, "]"));
+            throw new IllegalArgumentException(
+                    "can't get RestMockHttpRequestBuilder from SystemRepository. "
+                            + "check configuration. key=[" + HTTP_REQUEST_BUILDER_KEY + "]");
         }
         return requestBuilder;
     }
@@ -205,22 +204,12 @@ public class RestTestSupport extends TestEventDispatcher {
      */
     private List<ResourceLocator> getWarBasePaths(HttpTestConfiguration config) {
         String[] baseDirs = config.getWebBaseDir().split(",");
-        List<ResourceLocator> basePaths = new ArrayList<ResourceLocator>();
+        List<ResourceLocator> basePaths = new ArrayList<ResourceLocator>(baseDirs.length);
         for (String dir : baseDirs) {
-            basePaths.add(buildWarDirUri(dir));
+            basePaths.add(ResourceLocator.valueOf(
+                    "file://" + NablarchTestUtils.toCanonicalPath(dir)));
         }
         return basePaths;
-    }
-
-    /**
-     * WarディレクトリのURIを組み立てる。
-     *
-     * @param pathToWarDir Warディレクトリへの相対パス
-     * @return URI
-     */
-    private ResourceLocator buildWarDirUri(String pathToWarDir) {
-        return ResourceLocator.valueOf(
-                "file://" + NablarchTestUtils.toCanonicalPath(pathToWarDir));
     }
 
     /**
@@ -288,10 +277,9 @@ public class RestTestSupport extends TestEventDispatcher {
                 out.write(buffer, 0, length);
             }
 
-            return new String(out.toByteArray(), "UTF-8");
+            return out.toString("UTF-8");
         } finally {
-            FileUtil.closeQuietly(is);
-            FileUtil.closeQuietly(out);
+            FileUtil.closeQuietly(is, out);
         }
     }
 
