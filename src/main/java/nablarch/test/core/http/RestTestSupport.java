@@ -5,6 +5,7 @@ import nablarch.core.log.Logger;
 import nablarch.core.log.LoggerManager;
 import nablarch.core.repository.SystemRepository;
 import nablarch.core.util.FileUtil;
+import nablarch.core.util.annotation.Published;
 import nablarch.fw.ExecutionContext;
 import nablarch.fw.Handler;
 import nablarch.fw.web.HttpRequest;
@@ -12,6 +13,7 @@ import nablarch.fw.web.HttpResponse;
 import nablarch.fw.web.HttpServer;
 import nablarch.fw.web.HttpServerFactory;
 import nablarch.fw.web.ResourceLocator;
+import nablarch.fw.web.RestMockHttpRequest;
 import nablarch.fw.web.RestMockHttpRequestBuilder;
 import nablarch.fw.web.servlet.WebFrontController;
 import nablarch.test.NablarchTestUtils;
@@ -41,6 +43,7 @@ import static org.junit.Assert.assertEquals;
 /**
  * RESTfulウェブサービス用のテストサポートクラス
  */
+@Published
 public class RestTestSupport extends TestEventDispatcher {
     /** ロガー */
     private static final Logger LOGGER = LoggerManager.get(RestTestSupport.class);
@@ -552,5 +555,46 @@ public class RestTestSupport extends TestEventDispatcher {
             throw new IllegalStateException("can't get TestDataParser. check configuration.");
         }
         return parser;
+    }
+
+
+    /**
+     * GETのHTTPメソッドで{@link RestMockHttpRequest}を生成する。
+     *
+     * @param uri リクエストURI
+     * @return 生成された{@link RestMockHttpRequest}
+     */
+    public RestMockHttpRequest get(String uri) {
+        return getHttpRequestBuilder().get(uri);
+    }
+
+    /**
+     * POSTのHTTPメソッドで{@link RestMockHttpRequest}を生成する。
+     *
+     * @param uri リクエストURI
+     * @return 生成された{@link RestMockHttpRequest}
+     */
+    public RestMockHttpRequest post(String uri) {
+        return getHttpRequestBuilder().post(uri);
+    }
+
+    /**
+     * PUTのHTTPメソッドで{@link RestMockHttpRequest}を生成する。
+     *
+     * @param uri リクエストURI
+     * @return 生成された{@link RestMockHttpRequest}
+     */
+    public RestMockHttpRequest put(String uri) {
+        return getHttpRequestBuilder().put(uri);
+    }
+
+    /**
+     * DELETEのHTTPメソッドで{@link RestMockHttpRequest}を生成する。
+     *
+     * @param uri リクエストURI
+     * @return 生成された{@link RestMockHttpRequest}
+     */
+    public RestMockHttpRequest delete(String uri) {
+        return getHttpRequestBuilder().delete(uri);
     }
 }

@@ -7,12 +7,14 @@ import nablarch.core.exception.IllegalConfigurationException;
 import nablarch.core.repository.SystemRepository;
 import nablarch.fw.web.HttpRequest;
 import nablarch.fw.web.HttpResponse;
+import nablarch.fw.web.RestMockHttpRequest;
 import nablarch.fw.web.RestMockHttpRequestBuilder;
 import nablarch.test.RepositoryInitializer;
 import nablarch.test.core.db.DbAccessTestSupport;
 import nablarch.test.core.rule.TestDescription;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.ss.usermodel.WorkbookFactory;
+import org.hamcrest.CoreMatchers;
 import org.junit.After;
 import org.junit.Rule;
 import org.junit.Test;
@@ -29,6 +31,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 
 import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
 
@@ -146,6 +149,33 @@ public class RestTestSupportTest {
             assertTableEquals("sheet", "id");
             assertTableEquals("message", "sheet", "id");
             assertTableEquals("message", "sheet", "id", true);
+        }
+
+        /**
+         * {@link RestMockHttpRequestBuilder#get(String)}
+         * {@link RestMockHttpRequestBuilder#post(String)}
+         * {@link RestMockHttpRequestBuilder#put(String)}
+         * {@link RestMockHttpRequestBuilder#delete(String)}
+         * でそれぞれに対応する{@link RestMockHttpRequest}が生成されることを確認する。
+         */
+        @Test
+        public void newRequestTest() {
+            RestMockHttpRequest getReq = get("test");
+            assertThat(getReq.getMethod(), CoreMatchers.is("GET"));
+            assertThat(getReq.getRequestUri(), CoreMatchers.is("test"));
+            assertNull(getReq.getContentType());
+
+            RestMockHttpRequest postReq = post("test");
+            assertThat(postReq.getMethod(), CoreMatchers.is("POST"));
+            assertThat(getReq.getRequestUri(), CoreMatchers.is("test"));
+
+            RestMockHttpRequest putReq = put("test");
+            assertThat(putReq.getMethod(), CoreMatchers.is("PUT"));
+            assertThat(putReq.getRequestUri(), CoreMatchers.is("test"));
+
+            RestMockHttpRequest deleteReq = delete("test");
+            assertThat(deleteReq.getMethod(), CoreMatchers.is("DELETE"));
+            assertThat(deleteReq.getRequestUri(), CoreMatchers.is("test"));
         }
     }
 
