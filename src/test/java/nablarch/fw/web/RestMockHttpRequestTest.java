@@ -7,6 +7,8 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
 import java.io.UnsupportedEncodingException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URLEncoder;
 import java.util.Collections;
 import java.util.HashMap;
@@ -206,20 +208,6 @@ public class RestMockHttpRequestTest {
     public ExpectedException expectedException = ExpectedException.none();
 
     /**
-     * クエリストリングが"name=value"形式でない場合、例外が送出されることを確認する。
-     */
-    @Test
-    public void testAbnormalInvalidQueryString() {
-        expectedException.expect(IllegalArgumentException.class);
-        expectedException.expectMessage("name must be name=value format.");
-        RestMockHttpRequest sut = new RestMockHttpRequest(
-                Collections.singletonList(new MockConverter()), "testType")
-                .setRequestUri("/test?name");
-        String request = sut.toString();
-        fail("ここには到達しない。" + request);
-    }
-
-    /**
      * ボディがあるのにContent-Typeが指定されていない場合、例外が送出されることを確認する。
      */
     @Test
@@ -243,6 +231,25 @@ public class RestMockHttpRequestTest {
         RestMockHttpRequest sut = new RestMockHttpRequest(
                 Collections.singletonList(new NoContentConvertibleMockConverter()), "text/plain")
                 .setBody("test body");
+        String request = sut.toString();
+        fail("ここには到達しない。" + request);
+    }
+
+    /**
+     * URIのインスタンス化に失敗した場合、例外が送出されることを確認する。
+     */
+    @Test
+    public void testAbnormalURIConstructorThrowsURISyntaxException() throws URISyntaxException {
+        new Expectations(URI.class) {{
+            new URI(anyString);
+            result = new URISyntaxException("uri", "invalid format");
+        }};
+        expectedException.expect(IllegalArgumentException.class);
+        expectedException.expectMessage("url encoding failed. cause[invalid format: uri]");
+        expectedException.expectCause(CoreMatchers.<Throwable>instanceOf(URISyntaxException.class));
+        RestMockHttpRequest sut = new RestMockHttpRequest(
+                Collections.singletonList(new MockConverter()), "text/plain")
+                .setRequestUri("/test");
         String request = sut.toString();
         fail("ここには到達しない。" + request);
     }

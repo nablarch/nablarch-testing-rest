@@ -3,6 +3,8 @@ package nablarch.fw.web;
 import nablarch.core.util.StringUtil;
 
 import java.io.UnsupportedEncodingException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URLEncoder;
 import java.util.Arrays;
 import java.util.Collection;
@@ -226,37 +228,11 @@ public class RestMockHttpRequest extends MockHttpRequest {
      * @return URLエンコードされたリクエストURI
      */
     private String urlEncode(String uri) {
-        int index = uri.indexOf("?");
-        if (index == -1) {
-            return uri;
+        try {
+            return new URI(uri).toASCIIString();
+        } catch (URISyntaxException e) {
+            throw new IllegalArgumentException("url encoding failed. cause[" + e.getMessage() + "]", e);
         }
-        String requestPath = uri.substring(0, index);
-
-        String queryString = uri.substring(index + 1);
-        String[] params = queryString.split("&");
-        StringBuilder sb = new StringBuilder();
-        for (String param : params) {
-            if (sb.length() > 0) {
-                sb.append("&");
-            }
-            sb.append(getEncodedParam(param));
-        }
-
-        return requestPath + "?" + sb.toString();
-    }
-
-    /**
-     * "name=value"形式のリクエストパラメータをURLエンコードする。
-     *
-     * @param paramString エンコード対象のパラメータ
-     * @return URLエンコードされたパラメータ
-     */
-    private String getEncodedParam(String paramString) {
-        String[] param = paramString.split("=");
-        if (param.length != 2) {
-            throw new IllegalArgumentException(paramString + " must be name=value format.");
-        }
-        return param[0] + "=" + encode(param[1]);
     }
 
     /**
