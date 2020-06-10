@@ -86,18 +86,14 @@ public class RestTestSupportTest {
          * @param url モック化されたURL
          */
         @Test
-        public void testReadTextResource_CatchURISyntaxException(@Mocked final URL url) {
+        public void testReadTextResource_CatchURISyntaxException(@Mocked final URL url) throws URISyntaxException {
             expectedException.expect(IllegalArgumentException.class);
             expectedException.expectMessage("couldn't read resource [response.txt]. cause [url is invalid: dummy].");
-            try {
-                new Expectations() {{
-                    url.toURI();
-                    result = new URISyntaxException("dummy", "url is invalid");
-                }};
-                readTextResource("response.txt");
-            } catch (URISyntaxException e) {
-                fail(e.getMessage());
-            }
+            new Expectations() {{
+                url.toURI();
+                result = new URISyntaxException("dummy", "url is invalid");
+            }};
+            readTextResource("response.txt");
         }
 
         /**
@@ -218,22 +214,16 @@ public class RestTestSupportTest {
          * @param factory モック化された{@link WorkbookFactory}
          */
         @Test
-        public void testSetUp_WorkbookFactoryThrowsException(@Mocked final WorkbookFactory factory) {
+        public void testSetUp_WorkbookFactoryThrowsException(@Mocked final WorkbookFactory factory) throws IOException, InvalidFormatException {
             expectedException.expect(RuntimeException.class);
             expectedException.expectMessage("test data file open failed.");
-            try {
-                new Expectations() {{
-                    WorkbookFactory.create((InputStream) any);
-                    result = new Exception("cannot create.");
-                }};
-                RestTestSupport sut = new RestTestSupport();
-                setDummyDescription(RestTestSupport.class, sut);
-                sut.setUp();
-            } catch (IOException e) {
-                fail(e.getMessage());
-            } catch (InvalidFormatException e) {
-                fail(e.getMessage());
-            }
+            new Expectations() {{
+                WorkbookFactory.create((InputStream) any);
+                result = new Exception("cannot create.");
+            }};
+            RestTestSupport sut = new RestTestSupport();
+            setDummyDescription(RestTestSupport.class, sut);
+            sut.setUp();
         }
 
         /**
