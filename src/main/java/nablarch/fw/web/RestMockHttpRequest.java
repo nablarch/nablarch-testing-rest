@@ -17,22 +17,22 @@ public class RestMockHttpRequest extends MockHttpRequest {
     /** 改行文字 */
     private static final String LS = "\r\n";
 
-    /** bodyを書き出すために利用可能な{@link HttpBodyWriter} */
-    private final Collection<? extends HttpBodyWriter> httpBodyWriters;
+    /** bodyを書き出すために利用可能な{@link BodyConverter} */
+    private final Collection<? extends BodyConverter> bodyConverters;
     /** デフォルトContent-Type */
     private final String defaultContentType;
     /** リクエストボディ */
     private Object body;
 
     /**
-     * 引数で渡された{@link HttpBodyWriter}の{@link Collection}とデフォルトContent-Typeを持つオブジェクトを生成する。
+     * 引数で渡された{@link BodyConverter}の{@link Collection}とデフォルトContent-Typeを持つオブジェクトを生成する。
      *
-     * @param httpBodyWriters    利用可能な{@link HttpBodyWriter}
+     * @param bodyConverters     利用可能な{@link BodyConverter}
      * @param defaultContentType デフォルトContent-Type
      */
-    public RestMockHttpRequest(Collection<? extends HttpBodyWriter> httpBodyWriters,
+    public RestMockHttpRequest(Collection<? extends BodyConverter> bodyConverters,
                                String defaultContentType) {
-        this.httpBodyWriters = httpBodyWriters;
+        this.bodyConverters = bodyConverters;
         this.defaultContentType = defaultContentType;
     }
 
@@ -53,21 +53,21 @@ public class RestMockHttpRequest extends MockHttpRequest {
      */
     public RestMockHttpRequest setBody(Object body) {
         this.body = body;
-        if (getContentType() == null && defaultContentType != null) {
+        if (getMediaType() == null && defaultContentType != null) {
             setContentType(defaultContentType);
         }
         return this;
     }
 
     /**
-     * Content-Typeヘッダーを取得する。
+     * Content-TypeヘッダーからMIMEタイプを取得する。
      *
-     * @return Content-Type
+     * @return MIMEタイプ
      */
-    public ContentType getContentType() {
+    public MediaType getMediaType() {
         String rawContentType = getHeader("Content-Type");
         if (StringUtil.hasValue(rawContentType)) {
-            return new ContentType(rawContentType);
+            return new MediaType(rawContentType);
         }
         return null;
     }
@@ -240,10 +240,10 @@ public class RestMockHttpRequest extends MockHttpRequest {
      * @return リクエストボディの文字列
      */
     private String convertBody() {
-        ContentType contentType = getContentType();
-        if (contentType != null) {
-            HttpBodyWriter detectedHttpBodyWriter = findHttpBodyWriter(contentType);
-            return detectedHttpBodyWriter.writeValueAsString(body, contentType);
+        MediaType mediaType = getMediaType();
+        if (mediaType != null) {
+            BodyConverter detectedBodyConverter = findBodyConverter(mediaType);
+            return detectedBodyConverter.convert(body, mediaType);
         } else if (body != null) {
             throw new RuntimeException("there was no Content-Type header but body was not empty.");
         } else {
@@ -252,16 +252,16 @@ public class RestMockHttpRequest extends MockHttpRequest {
     }
 
     /**
-     * Content-Typeに合った{@link HttpBodyWriter}を見つける。
+     * MIMEタイプに合った{@link BodyConverter}を見つける。
      *
      * @return 見つかった{@link HttpBodyWriter}
      */
-    private HttpBodyWriter findHttpBodyWriter(ContentType contentType) {
-        for (HttpBodyWriter httpBodyWriter : httpBodyWriters) {
-            if (httpBodyWriter.isWritable(body, contentType)) {
-                return httpBodyWriter;
+    private BodyConverter findBodyConverter(MediaType mediaType) {
+        for (BodyConverter bodyConverter : bodyConverters) {
+            if (bodyConverter.isConvertible(body, mediaType)) {
+                return bodyConverter;
             }
         }
-        throw new RuntimeException("unsupported media type requested. Content-Type = [ " + contentType + " ]");
+        throw new RuntimeException("unsupported media type requested. MIME type = [ " + mediaType + " ]");
     }
 }

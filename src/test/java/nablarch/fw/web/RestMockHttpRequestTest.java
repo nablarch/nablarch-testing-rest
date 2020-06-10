@@ -7,12 +7,12 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
 import java.io.UnsupportedEncodingException;
-import java.io.Writer;
 import java.net.URLEncoder;
 import java.util.Collections;
 import java.util.Map;
 
 import static org.hamcrest.CoreMatchers.is;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
@@ -55,12 +55,12 @@ public class RestMockHttpRequestTest {
      */
     @Test
     public void testNormalDefault() {
-        RestMockHttpRequest sut = new RestMockHttpRequest(Collections.singletonList(new MockWriter())
+        RestMockHttpRequest sut = new RestMockHttpRequest(Collections.singletonList(new MockConverter())
                 , "testType");
         assertThat(sut.getMethod(), is("GET"));
         assertThat(sut.getRequestUri(), is("/"));
         assertTrue(sut.getHeaderMap().isEmpty());
-        assertNull(sut.getContentType());
+        assertNull(sut.getMediaType());
         assertNull(sut.getBody());
         assertThat(sut.toString(), is(DEFAULT_REQUEST));
     }
@@ -71,7 +71,7 @@ public class RestMockHttpRequestTest {
      */
     @Test
     public void testNormalGet1() {
-        RestMockHttpRequest sut = new RestMockHttpRequest(Collections.singletonList(new MockWriter())
+        RestMockHttpRequest sut = new RestMockHttpRequest(Collections.singletonList(new MockConverter())
                 , "testType");
         sut.setRequestUri("/test");
         assertThat(sut.toString(), is(GET_REQUEST));
@@ -83,7 +83,7 @@ public class RestMockHttpRequestTest {
      */
     @Test
     public void testNormalGet2() {
-        RestMockHttpRequest sut = new RestMockHttpRequest(Collections.singletonList(new MockWriter())
+        RestMockHttpRequest sut = new RestMockHttpRequest(Collections.singletonList(new MockConverter())
                 , "testType");
         sut.setRequestUri("/test?name=テスト&value=ゲットリクエスト");
         assertThat(sut.toString(), is(GET_REQUEST_WITH_QUERY));
@@ -96,7 +96,7 @@ public class RestMockHttpRequestTest {
      */
     @Test
     public void testNormalGet3() {
-        RestMockHttpRequest sut = new RestMockHttpRequest(Collections.singletonList(new MockWriter())
+        RestMockHttpRequest sut = new RestMockHttpRequest(Collections.singletonList(new MockConverter())
                 , "testType");
         sut.setRequestUri("/test?name=テスト")
                 .setParam("value", "ゲットリクエスト");
@@ -110,7 +110,7 @@ public class RestMockHttpRequestTest {
      */
     @Test
     public void testNormalGet4() {
-        RestMockHttpRequest sut = new RestMockHttpRequest(Collections.singletonList(new MockWriter())
+        RestMockHttpRequest sut = new RestMockHttpRequest(Collections.singletonList(new MockConverter())
                 , "testType");
         sut.setRequestUri("/test")
                 .setParam("name", "テスト")
@@ -124,7 +124,7 @@ public class RestMockHttpRequestTest {
      */
     @Test
     public void testNormalGet5() {
-        RestMockHttpRequest sut = new RestMockHttpRequest(Collections.singletonList(new MockWriter())
+        RestMockHttpRequest sut = new RestMockHttpRequest(Collections.singletonList(new MockConverter())
                 , "testType");
         sut.setRequestUri("/test?name=テスト&name=ゲットリクエスト");
         assertThat(sut.toString(), is(GET_REQUEST_WITH_QUERY_DUPLICATED_PARAM));
@@ -137,7 +137,7 @@ public class RestMockHttpRequestTest {
      */
     @Test
     public void testNormalGet6() {
-        RestMockHttpRequest sut = new RestMockHttpRequest(Collections.singletonList(new MockWriter())
+        RestMockHttpRequest sut = new RestMockHttpRequest(Collections.singletonList(new MockConverter())
                 , "testType");
         sut.setRequestUri("/test?name=テスト")
                 .setParam("name", "ゲットリクエスト");
@@ -151,7 +151,7 @@ public class RestMockHttpRequestTest {
      */
     @Test
     public void testNormalGet7() {
-        RestMockHttpRequest sut = new RestMockHttpRequest(Collections.singletonList(new MockWriter())
+        RestMockHttpRequest sut = new RestMockHttpRequest(Collections.singletonList(new MockConverter())
                 , "testType");
         sut.setRequestUri("/test")
                 .setParam("name", "テスト", "ゲットリクエスト");
@@ -164,14 +164,14 @@ public class RestMockHttpRequestTest {
      */
     @Test
     public void testNormalPost1() {
-        RestMockHttpRequest sut = new RestMockHttpRequest(Collections.singletonList(new MockWriter())
+        RestMockHttpRequest sut = new RestMockHttpRequest(Collections.singletonList(new MockConverter())
                 , "testType");
         sut.setBody("{\"field\" : \"value\"}");
-        assertThat(sut.getContentType().getMediaType(), is("testType"));
+        assertEquals(new MediaType("testType"), sut.getMediaType());
         assertThat((String) sut.getBody(), is("{\"field\" : \"value\"}"));
 
         sut.setContentType("application/json");
-        assertThat(sut.getContentType().getMediaType(), is("application/json"));
+        assertEquals(new MediaType("application/json"), sut.getMediaType());
 
         Map<String, String> headerMap = sut.getHeaderMap();
         headerMap.put("test", "OK");
@@ -185,7 +185,7 @@ public class RestMockHttpRequestTest {
      */
     @Test
     public void testNormalPost2() {
-        RestMockHttpRequest sut = new RestMockHttpRequest(Collections.singletonList(new MockWriter())
+        RestMockHttpRequest sut = new RestMockHttpRequest(Collections.singletonList(new MockConverter())
                 , "testType");
         sut.setMethod("POST").setRequestUri("/test")
                 .setContentType("application/x-www-form-urlencoded")
@@ -203,7 +203,7 @@ public class RestMockHttpRequestTest {
     public void testAbnormalInvalidQueryString() {
         expectedException.expect(IllegalArgumentException.class);
         expectedException.expectMessage("name must be name=value format.");
-        RestMockHttpRequest sut = new RestMockHttpRequest(Collections.singletonList(new MockWriter())
+        RestMockHttpRequest sut = new RestMockHttpRequest(Collections.singletonList(new MockConverter())
                 , "testType");
         sut.setRequestUri("/test?name");
         String request = sut.toString();
@@ -217,20 +217,20 @@ public class RestMockHttpRequestTest {
     public void testAbnormalRequestHasNotContentTypeWithBody() {
         expectedException.expect(RuntimeException.class);
         expectedException.expectMessage("there was no Content-Type header but body was not empty.");
-        RestMockHttpRequest sut = new RestMockHttpRequest(Collections.singletonList(new MockWriter()), null);
+        RestMockHttpRequest sut = new RestMockHttpRequest(Collections.singletonList(new MockConverter()), null);
         sut.setBody("test body");
         String request = sut.toString();
         fail("ここには到達しない。" + request);
     }
 
     /**
-     * 指定したContent-Typeを書き出し可能な{@link HttpBodyWriter}がない場合、例外が送出されることを確認する。
+     * 指定したContent-Typeを書き出し可能な{@link BodyConverter}がない場合、例外が送出されることを確認する。
      */
     @Test
-    public void testAbnormalCouldNotFindBodyWriter() {
+    public void testAbnormalCouldNotFindBodyConverter() {
         expectedException.expect(RuntimeException.class);
-        expectedException.expectMessage("unsupported media type requested. Content-Type = [ text/plain ]");
-        RestMockHttpRequest sut = new RestMockHttpRequest(Collections.singletonList(new NoContentWritableMockWriter()), "text/plain");
+        expectedException.expectMessage("unsupported media type requested. MIME type = [ text/plain ]");
+        RestMockHttpRequest sut = new RestMockHttpRequest(Collections.singletonList(new NoContentConvertibleMockConverter()), "text/plain");
         sut.setBody("test body");
         String request = sut.toString();
         fail("ここには到達しない。" + request);
@@ -248,7 +248,7 @@ public class RestMockHttpRequestTest {
         expectedException.expect(IllegalStateException.class);
         expectedException.expectMessage("url encoding failed.");
         expectedException.expectCause(CoreMatchers.<Throwable>instanceOf(UnsupportedEncodingException.class));
-        RestMockHttpRequest sut = new RestMockHttpRequest(Collections.singletonList(new MockWriter()), "text/plain");
+        RestMockHttpRequest sut = new RestMockHttpRequest(Collections.singletonList(new MockConverter()), "text/plain");
         sut.setRequestUri("/test").setParam("name", "テスト");
         String request = sut.toString();
         fail("ここには到達しない。" + request);
@@ -261,41 +261,41 @@ public class RestMockHttpRequestTest {
     public void testAbnormalParamMapAndBodyAreNotBothEmpty() {
         expectedException.expect(RuntimeException.class);
         expectedException.expectMessage("set only one of paramMap or body.");
-        RestMockHttpRequest sut = new RestMockHttpRequest(Collections.singletonList(new MockWriter()), "text/plain");
+        RestMockHttpRequest sut = new RestMockHttpRequest(Collections.singletonList(new MockConverter()), "text/plain");
         sut.setRequestUri("/test").setBody("test body").setParam("parameter", "value");
         String request = sut.toString();
         fail("ここには到達しない。" + request);
     }
 
     /**
-     * テスト用の{@link HttpBodyWriter}実装。
-     * Content-Typeが何であっても{@link Writer#write(String)}で書き出しを行う。
+     * テスト用の{@link BodyConverter}実装。
+     * Content-Typeが何であってもボディをStringにキャストして返す。
      */
-    private static class MockWriter implements HttpBodyWriter {
+    private static class MockConverter implements BodyConverter {
         @Override
-        public boolean isWritable(Object body, ContentType contentType) {
+        public boolean isConvertible(Object body, MediaType mediaType) {
             return true;
         }
 
         @Override
-        public String writeValueAsString(Object body, ContentType contentType) {
+        public String convert(Object body, MediaType mediaType) {
             return (String) body;
         }
     }
 
     /**
-     * テスト用の{@link HttpBodyWriter}実装。
-     * {@link HttpBodyWriter#isWritable(Object, ContentType)}で常にfalseを返す。
+     * テスト用の{@link BodyConverter}実装。
+     * {@link BodyConverter#isConvertible(Object, MediaType)}で常にfalseを返す。
      */
-    private static class NoContentWritableMockWriter implements HttpBodyWriter {
+    private static class NoContentConvertibleMockConverter implements BodyConverter {
 
         @Override
-        public boolean isWritable(Object body, ContentType contentType) {
+        public boolean isConvertible(Object body, MediaType mediaType) {
             return false;
         }
 
         @Override
-        public String writeValueAsString(Object body, ContentType contentType) {
+        public String convert(Object body, MediaType mediaType) {
             return null;
         }
     }

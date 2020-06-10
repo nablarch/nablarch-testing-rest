@@ -8,10 +8,10 @@ import java.util.Collection;
  */
 public class RestMockHttpRequestBuilder {
 
-    /** 利用可能な{@link HttpBodyWriter} */
-    private Collection<? extends HttpBodyWriter> httpBodyWriters = Arrays.asList(
-            new StringHttpBodyWriter()
-            , new JacksonHttpBodyWriter()
+    /** 利用可能な{@link BodyConverter} */
+    private Collection<? extends BodyConverter> bodyConverters = Arrays.asList(
+            new StringBodyConverter()
+            , new JacksonBodyConverter()
     );
     /** デフォルトContent-Type */
     private String defaultContentType = "application/json";
@@ -24,7 +24,7 @@ public class RestMockHttpRequestBuilder {
      * @return 生成された{@link RestMockHttpRequest}
      */
     private RestMockHttpRequest newRequest(String httpMethod, String uri) {
-        return new RestMockHttpRequest(httpBodyWriters, defaultContentType).setMethod(httpMethod)
+        return new RestMockHttpRequest(bodyConverters, defaultContentType).setMethod(httpMethod)
                 .setRequestUri(uri);
     }
 
@@ -78,11 +78,11 @@ public class RestMockHttpRequestBuilder {
     }
 
     /**
-     * 利用可能な{@link HttpBodyWriter}を設定する。
+     * 利用可能な{@link BodyConverter}を設定する。
      *
-     * @param httpBodyWriters {@link HttpBodyWriter}
+     * @param bodyConverters {@link BodyConverter}
      */
-    public void setHttpBodyWriters(Collection<? extends HttpBodyWriter> httpBodyWriters) {
-        this.httpBodyWriters = httpBodyWriters;
+    public void setBodyConverters(Collection<? extends BodyConverter> bodyConverters) {
+        this.bodyConverters = bodyConverters;
     }
 }

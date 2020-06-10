@@ -10,7 +10,6 @@ import java.util.List;
 import static nablarch.test.Assertion.fail;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 
 /**
@@ -21,34 +20,28 @@ public class RestMockHttpRequestBuilderTest {
     RestMockHttpRequestBuilder sut = new RestMockHttpRequestBuilder();
 
     /**
-     * 利用可能な{@link HttpBodyWriter}のテスト。
-     * デフォルトでは{@link StringHttpBodyWriter}と{@link JacksonHttpBodyWriter}を持つこと
-     * {@link RestMockHttpRequestBuilder#setHttpBodyWriters(Collection)}で
-     * httpBodyWritersが設定できることを確認する。
+     * 利用可能な{@link BodyConverter}のテスト。
+     * デフォルトでは{@link StringBodyConverter}と{@link JacksonBodyConverter}を持つこと
+     * {@link RestMockHttpRequestBuilder#setBodyConverters(Collection)}で
+     * bodyConvertersが設定できることを確認する。
      */
     @Test
-    public void bodyWriterTest() {
-        try {
-            Field writersField = sut.getClass().getDeclaredField("httpBodyWriters");
-            writersField.setAccessible(true);
-            List<HttpBodyWriter> defaultList = (List<HttpBodyWriter>) writersField.get(sut);
-            assertEquals(2, defaultList.size());
-            for (HttpBodyWriter writer : defaultList) {
-                if (!(writer instanceof StringHttpBodyWriter)
-                        && !(writer instanceof JacksonHttpBodyWriter)) {
-                    fail("default HttpBodyWriter list has unknown Writer.");
-                }
+    public void testBodyConverter() throws NoSuchFieldException, IllegalAccessException {
+        Field convertersField = sut.getClass().getDeclaredField("bodyConverters");
+        convertersField.setAccessible(true);
+        List<BodyConverter> defaultList = (List<BodyConverter>) convertersField.get(sut);
+        assertEquals(2, defaultList.size());
+        for (BodyConverter converter : defaultList) {
+            if (!(converter instanceof StringBodyConverter)
+                    && !(converter instanceof JacksonBodyConverter)) {
+                fail("default BodyConverter list has unknown BodyConverter.");
             }
-
-            List<HttpBodyWriter> bodyWriters = Arrays.asList(new StringHttpBodyWriter(), new JacksonHttpBodyWriter());
-            sut.setHttpBodyWriters(bodyWriters);
-            List<HttpBodyWriter> actual = (List<HttpBodyWriter>) writersField.get(sut);
-            assertThat(actual, is(bodyWriters));
-        } catch (IllegalAccessException e) {
-            fail(e);
-        } catch (NoSuchFieldException e) {
-            fail(e);
         }
+
+        List<BodyConverter> bodyConverters = Arrays.asList(new StringBodyConverter(), new JacksonBodyConverter());
+        sut.setBodyConverters(bodyConverters);
+        List<BodyConverter> actual = (List<BodyConverter>) convertersField.get(sut);
+        assertThat(actual, is(bodyConverters));
     }
 
     /**
@@ -58,22 +51,15 @@ public class RestMockHttpRequestBuilderTest {
      * 設定できることを確認する。
      */
     @Test
-    public void defaultContentTypeTest() {
-        try {
-            Field defaultContentTypeField = sut.getClass().getDeclaredField("defaultContentType");
-            defaultContentTypeField.setAccessible(true);
-            String defaultValue = (String) defaultContentTypeField.get(sut);
-            assertThat(defaultValue, is("application/json"));
+    public void testDefaultContentType() throws NoSuchFieldException, IllegalAccessException {
+        Field defaultContentTypeField = sut.getClass().getDeclaredField("defaultContentType");
+        defaultContentTypeField.setAccessible(true);
+        String defaultValue = (String) defaultContentTypeField.get(sut);
+        assertThat(defaultValue, is("application/json"));
 
-            sut.setDefaultContentType("text/plain");
-            String textPlain = (String) defaultContentTypeField.get(sut);
-            assertThat(textPlain, is("text/plain"));
-
-        } catch (IllegalAccessException e) {
-            fail(e);
-        } catch (NoSuchFieldException e) {
-            fail(e);
-        }
+        sut.setDefaultContentType("text/plain");
+        String textPlain = (String) defaultContentTypeField.get(sut);
+        assertThat(textPlain, is("text/plain"));
     }
 
     /**
@@ -88,7 +74,6 @@ public class RestMockHttpRequestBuilderTest {
         RestMockHttpRequest getReq = sut.get("test");
         assertThat(getReq.getMethod(), is("GET"));
         assertThat(getReq.getRequestUri(), is("test"));
-        assertNull(getReq.getContentType());
 
         RestMockHttpRequest postReq = sut.post("test");
         assertThat(postReq.getMethod(), is("POST"));
