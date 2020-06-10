@@ -6,6 +6,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
@@ -23,6 +24,7 @@ public class RestMockHttpRequest extends MockHttpRequest {
     private final String defaultContentType;
     /** リクエストボディ */
     private Object body;
+    public static final String CONTENT_LENGTH_KEY = "Content-Length";
 
     /**
      * 引数で渡された{@link BodyConverter}の{@link Collection}とデフォルトContent-Typeを持つオブジェクトを生成する。
@@ -99,6 +101,21 @@ public class RestMockHttpRequest extends MockHttpRequest {
     }
 
     @Override
+    public RestMockHttpRequest setParam(String name, String... params) {
+        return (RestMockHttpRequest) super.setParam(name, params);
+    }
+
+    @Override
+    public RestMockHttpRequest setParamMap(Map<String, String[]> params) {
+        return (RestMockHttpRequest) super.setParamMap(params);
+    }
+
+    @Override
+    public RestMockHttpRequest setCookie(HttpCookie cookie) {
+        return (RestMockHttpRequest) super.setCookie(cookie);
+    }
+
+    @Override
     public String toString() {
         Map<String, String[]> paramMap = getParamMap();
 
@@ -109,6 +126,7 @@ public class RestMockHttpRequest extends MockHttpRequest {
         String encodedUri = urlEncode(getRequestUri());
         String encodedParams = encodeParams(paramMap);
         String bodyStr = convertBody();
+        Map<String, String> headers = new HashMap<String, String>(this.getHeaderMap());
 
         if (StringUtil.hasValue(encodedParams)) {
             if ("GET".equals(getMethod())) {
@@ -122,9 +140,8 @@ public class RestMockHttpRequest extends MockHttpRequest {
             }
         }
 
-        int contentLength = bodyStr.getBytes().length;
-        if (contentLength > 0) {
-            getHeaderMap().put("Content-Length", String.valueOf(contentLength));
+        if (StringUtil.hasValue(bodyStr)) {
+            setContentLength(headers, bodyStr);
         }
 
         StringBuilder buffer = new StringBuilder();
@@ -136,7 +153,6 @@ public class RestMockHttpRequest extends MockHttpRequest {
                 .append(LS);
 
 
-        Map<String, String> headers = this.getHeaderMap();
         for (Map.Entry<String, String> entry : headers.entrySet()) {
             buffer.append(entry.getKey())
                     .append(": ")
@@ -145,8 +161,31 @@ public class RestMockHttpRequest extends MockHttpRequest {
         }
 
         buffer.append(LS);
-        buffer.append(bodyStr);
+        if (StringUtil.hasValue(bodyStr)) {
+            buffer.append(bodyStr);
+        }
         return buffer.toString();
+    }
+
+    /**
+     * 引数で渡されたヘッダーMapに Content-Length をセットする。
+     * 誤った Content-Length が設定されていた場合は例外を送出する。
+     *
+     * @param headers ヘッダー
+     * @param bodyStr リクエストボディ
+     */
+    private void setContentLength(Map<String, String> headers, String bodyStr) {
+        int contentLength = bodyStr.getBytes().length;
+        if (headers.containsKey(CONTENT_LENGTH_KEY)) {
+            String contentLengthOrg = headers.get(CONTENT_LENGTH_KEY);
+            if (Integer.parseInt(contentLengthOrg) != contentLength) {
+                throw new RuntimeException("wrong Content-Length[" + contentLengthOrg + "] was set."
+                        + "correct length is [" + contentLength + "].");
+            }
+        }
+        if (contentLength > 0) {
+            headers.put(CONTENT_LENGTH_KEY, String.valueOf(contentLength));
+        }
     }
 
     /**
@@ -157,7 +196,7 @@ public class RestMockHttpRequest extends MockHttpRequest {
      */
     private String encodeParams(Map<String, String[]> paramMap) {
         if (paramMap.isEmpty()) {
-            return "";
+            return null;
         }
         StringBuilder buffer = new StringBuilder();
         Iterator<Map.Entry<String, String[]>> params = paramMap.entrySet().iterator();
@@ -240,14 +279,15 @@ public class RestMockHttpRequest extends MockHttpRequest {
      * @return リクエストボディの文字列
      */
     private String convertBody() {
+        if (body == null) {
+            return null;
+        }
         MediaType mediaType = getMediaType();
         if (mediaType != null) {
             BodyConverter detectedBodyConverter = findBodyConverter(mediaType);
             return detectedBodyConverter.convert(body, mediaType);
-        } else if (body != null) {
-            throw new RuntimeException("there was no Content-Type header but body was not empty.");
         } else {
-            return "";
+            throw new RuntimeException("there was no Content-Type header but body was not empty.");
         }
     }
 
