@@ -232,6 +232,17 @@ public class RestTestSupport extends TestEventDispatcher {
      * ステータスコードが想定通りであることを表明する。
      *
      * @param message  アサート失敗時のメッセージ
+     * @param expected 期待するステータス
+     * @param response HTTPレスポンス
+     */
+    public void assertStatusCode(String message, HttpResponse.Status expected, HttpResponse response) {
+        assertStatusCode(message, expected.getStatusCode(), response);
+    }
+
+    /**
+     * ステータスコードが想定通りであることを表明する。
+     *
+     * @param message  アサート失敗時のメッセージ
      * @param expected 期待するステータスコード値
      * @param response HTTPレスポンス
      */

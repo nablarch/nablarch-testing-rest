@@ -56,7 +56,7 @@ public class RestTestSupportTest {
         @Test
         public void testNormal() {
             HttpResponse response = sendRequest(get("/test"));
-            assertStatusCode("200 OK", 200, response);
+            assertStatusCode("200 OK", HttpResponse.Status.OK, response);
             String sessionIdReplacedResponse = response.toString().replaceAll("JSESSIONID=.+;", "JSESSIONID=DUMMY;");
             assertThat(readTextResource("response.txt"), is(sessionIdReplacedResponse));
         }
