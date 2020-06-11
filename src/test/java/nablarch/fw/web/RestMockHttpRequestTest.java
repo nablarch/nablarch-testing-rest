@@ -15,7 +15,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
@@ -64,7 +63,6 @@ public class RestMockHttpRequestTest {
         assertThat(sut.getMethod(), is("GET"));
         assertThat(sut.getRequestUri(), is("/"));
         assertTrue(sut.getHeaderMap().isEmpty());
-        assertNull(sut.getMediaType());
         assertNull(sut.getBody());
         assertThat(sut.toString(), is(DEFAULT_REQUEST));
     }
@@ -174,11 +172,11 @@ public class RestMockHttpRequestTest {
         RestMockHttpRequest sut = new RestMockHttpRequest(
                 Collections.singletonList(new MockConverter()), "testType");
         sut.setBody("{\"field\" : \"value\"}");
-        assertEquals(new MediaType("testType"), sut.getMediaType());
+        assertThat(sut.getHeader("Content-Type"), is("testType"));
         assertThat((String) sut.getBody(), is("{\"field\" : \"value\"}"));
 
         sut.setContentType("application/json");
-        assertEquals(new MediaType("application/json"), sut.getMediaType());
+        assertThat(sut.getHeader("Content-Type"), is("application/json"));
 
         Map<String, String> headerMap = sut.getHeaderMap();
         headerMap.put("test", "OK");

@@ -21,18 +21,18 @@ public class MediaType {
         }
 
         String[] parts = contentType.split(";");
-        mediaType = parts[0].trim();
+        mediaType = parts[0].trim().toLowerCase();
     }
 
     @Override
     public boolean equals(Object obj) {
         return obj instanceof MediaType
-                && mediaType.equalsIgnoreCase(((MediaType) obj).mediaType);
+                && mediaType.equals(((MediaType) obj).mediaType);
     }
 
     @Override
     public int hashCode() {
-        return mediaType.toLowerCase().hashCode();
+        return mediaType.hashCode();
     }
 
     @Override

@@ -30,7 +30,6 @@ import java.net.URISyntaxException;
 import java.net.URL;
 
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
 
@@ -156,7 +155,6 @@ public class RestTestSupportTest {
             RestMockHttpRequest getReq = get("test");
             assertThat(getReq.getMethod(), is("GET"));
             assertThat(getReq.getRequestUri(), is("test"));
-            assertNull(getReq.getMediaType());
 
             RestMockHttpRequest postReq = post("test");
             assertThat(postReq.getMethod(), is("POST"));

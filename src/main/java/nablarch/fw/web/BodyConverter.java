@@ -19,7 +19,7 @@ public interface BodyConverter {
      *
      * @param body      リクエストボディ
      * @param mediaType Content-Type
-     * @return ボディを表す文字列
+     * @return bodyを変換した文字列
      */
     String convert(Object body, MediaType mediaType);
 }

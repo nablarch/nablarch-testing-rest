@@ -68,7 +68,7 @@ public class RestMockHttpRequest extends MockHttpRequest {
      *
      * @return MIMEタイプ
      */
-    public MediaType getMediaType() {
+    private MediaType getMediaType() {
         String rawContentType = getHeader("Content-Type");
         if (StringUtil.hasValue(rawContentType)) {
             return new MediaType(rawContentType);
