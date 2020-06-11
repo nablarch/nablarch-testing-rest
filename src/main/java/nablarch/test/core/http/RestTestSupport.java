@@ -106,9 +106,7 @@ public class RestTestSupport extends TestEventDispatcher {
     public RestMockHttpRequestBuilder getHttpRequestBuilder() {
         RestMockHttpRequestBuilder requestBuilder = SystemRepository.get(HTTP_REQUEST_BUILDER_KEY);
         if (requestBuilder == null) {
-            throw new IllegalArgumentException(
-                    "can't get RestMockHttpRequestBuilder from SystemRepository. "
-                            + "check configuration. key=[" + HTTP_REQUEST_BUILDER_KEY + "]");
+            throw new IllegalConfigurationException("could not find component. name=[" + HTTP_REQUEST_BUILDER_KEY + "].");
         }
         return requestBuilder;
     }
@@ -139,7 +137,6 @@ public class RestTestSupport extends TestEventDispatcher {
 
     /**
      * 初回の場合、内臓サーバを起動する。
-     * 初回かつテストデータが存在する場合共通テストデータをDB登録する。
      *
      * @param config 設定定義
      */
@@ -156,10 +153,6 @@ public class RestTestSupport extends TestEventDispatcher {
     public static void resetHttpServer() {
         if (initialized) {
             server = null;
-            RestTestConfiguration config = SystemRepository.get(REST_TEST_CONFIGURATION_KEY);
-            WebFrontController controller = SystemRepository.get(config.getWebFrontControllerKey());
-            List<Handler> handlerQueue = controller.getHandlerQueue();
-            handlerQueue.remove(0);
             initialized = false;
         }
     }
@@ -195,7 +188,7 @@ public class RestTestSupport extends TestEventDispatcher {
 
         // ハンドラキューの準備
         WebFrontController controller = SystemRepository.get(config.getWebFrontControllerKey());
-        List<Handler> handlerQueue = controller.getHandlerQueue();
+        List<Handler> handlerQueue = new ArrayList<Handler>(controller.getHandlerQueue());
         handler.register(handlerQueue);
         server.setHandlerQueue(handlerQueue);
     }
@@ -421,6 +414,7 @@ public class RestTestSupport extends TestEventDispatcher {
         dbSupport.assertTableEquals(message, sheetName, groupId, failIfNoDataFound);
     }
 
+    /** テストデータのExcelファイルが存在するか否か */
     private boolean testDataExists = true;
 
     /**
@@ -447,22 +441,11 @@ public class RestTestSupport extends TestEventDispatcher {
      * 最初にリソースが見つかったテストデータのパスを返す。
      *
      * @param resourceName リソース名
-     * @return テストデータのパス
+     * @return リソースが存在するパス（存在しない場合、null）
      */
     private String getPathOf(String resourceName) {
         List<String> baseDirs = getTestDataPaths();
-        return getPathResourceExisting(baseDirs, resourceName);
-    }
-
-    /**
-     * リソースが存在するパスを取得する。
-     *
-     * @param candidatePath 候補となるパス群
-     * @param resourceName  リソース名
-     * @return リソースが存在するパス（存在しない場合、null）
-     */
-    private String getPathResourceExisting(List<String> candidatePath, String resourceName) {
-        for (String basePath : candidatePath) {
+        for (String basePath : baseDirs) {
             if (getTestDataParser().isResourceExisting(basePath, resourceName)) {
                 return basePath;
             }
@@ -564,7 +547,7 @@ public class RestTestSupport extends TestEventDispatcher {
     public final TestDataParser getTestDataParser() {
         TestDataParser parser = SystemRepository.get(TEST_DATA_PARSER_KEY);
         if (parser == null) {
-            throw new IllegalStateException("can't get TestDataParser. check configuration.");
+            throw new IllegalConfigurationException("could not find component. name=[" + TEST_DATA_PARSER_KEY + "].");
         }
         return parser;
     }

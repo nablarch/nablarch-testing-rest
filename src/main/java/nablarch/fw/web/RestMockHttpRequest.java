@@ -70,9 +70,9 @@ public class RestMockHttpRequest extends MockHttpRequest {
      * @return MIMEタイプ
      */
     private MediaType getMediaType() {
-        String rawContentType = getHeader(CONTENT_TYPE_KEY);
-        if (StringUtil.hasValue(rawContentType)) {
-            return new MediaType(rawContentType);
+        String contentType = getHeader(CONTENT_TYPE_KEY);
+        if (StringUtil.hasValue(contentType)) {
+            return new MediaType(contentType);
         }
         return null;
     }
@@ -144,7 +144,6 @@ public class RestMockHttpRequest extends MockHttpRequest {
         String uri = getRequestUri();
         String params = concatParams(paramMap);
         String bodyStr = convertBody();
-        Map<String, String> headers = new HashMap<String, String>(this.getHeaderMap());
 
         if (StringUtil.hasValue(params)) {
             if ("GET".equals(getMethod())) {
@@ -158,6 +157,7 @@ public class RestMockHttpRequest extends MockHttpRequest {
             }
         }
 
+        Map<String, String> headers = new HashMap<String, String>(this.getHeaderMap());
         if (StringUtil.hasValue(bodyStr)) {
             setContentLength(headers, bodyStr);
         }
@@ -195,9 +195,9 @@ public class RestMockHttpRequest extends MockHttpRequest {
     private void setContentLength(Map<String, String> headers, String bodyStr) {
         int contentLength = bodyStr.getBytes().length;
         if (headers.containsKey(CONTENT_LENGTH_KEY)) {
-            String userSetLength = headers.get(CONTENT_LENGTH_KEY);
-            if (Integer.parseInt(userSetLength) != contentLength) {
-                throw new RuntimeException("wrong Content-Length[" + userSetLength + "] was set."
+            String contentLengthFromHeader = headers.get(CONTENT_LENGTH_KEY);
+            if (Integer.parseInt(contentLengthFromHeader) != contentLength) {
+                throw new RuntimeException("wrong Content-Length[" + contentLengthFromHeader + "] was set."
                         + "correct length is [" + contentLength + "].");
             }
         }
@@ -210,7 +210,7 @@ public class RestMockHttpRequest extends MockHttpRequest {
      * リクエストパラメータのMapを"key=value(&key=value...)"の形式で結合する。
      *
      * @param paramMap リクエストパラメータ
-     * @return URLエンコードされ結合されたリクエストパラメータ
+     * @return 結合されたリクエストパラメータ
      */
     private String concatParams(Map<String, String[]> paramMap) {
         if (paramMap.isEmpty()) {

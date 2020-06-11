@@ -67,10 +67,9 @@ public class RestTestSupportTest {
          */
         @Test
         public void testGetHttpRequestBuilder_ComponentNotRegistered(@Mocked final SystemRepository repository) {
-            expectedException.expect(IllegalArgumentException.class);
+            expectedException.expect(IllegalConfigurationException.class);
             expectedException.expectMessage(
-                    "can't get RestMockHttpRequestBuilder from SystemRepository. " +
-                            "check configuration. key=[restMockHttpRequestBuilder]");
+                    "could not find component. name=[restMockHttpRequestBuilder]");
             new Expectations() {{
                 SystemRepository.get("restMockHttpRequestBuilder");
                 result = null;
@@ -231,8 +230,8 @@ public class RestTestSupportTest {
          */
         @Test
         public void testGetTestDataParser_ComponentNotRegistered(@Mocked final SystemRepository repository) {
-            expectedException.expect(IllegalStateException.class);
-            expectedException.expectMessage("can't get TestDataParser. check configuration.");
+            expectedException.expect(IllegalConfigurationException.class);
+            expectedException.expectMessage("could not find component. name=[testDataParser].");
             new Expectations() {{
                 SystemRepository.get("testDataParser");
                 result = null;
