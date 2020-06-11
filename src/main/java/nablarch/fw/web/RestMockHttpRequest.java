@@ -24,7 +24,10 @@ public class RestMockHttpRequest extends MockHttpRequest {
     private final String defaultContentType;
     /** リクエストボディ */
     private Object body;
-    public static final String CONTENT_LENGTH_KEY = "Content-Length";
+    /** Content-Typeヘッダーのキー */
+    private static final String CONTENT_TYPE_KEY = "Content-Type";
+    /** Content-Lengthヘッダーのキー */
+    private static final String CONTENT_LENGTH_KEY = "Content-Length";
 
     /**
      * 引数で渡された{@link BodyConverter}の{@link Collection}とデフォルトContent-Typeを持つオブジェクトを生成する。
@@ -67,7 +70,7 @@ public class RestMockHttpRequest extends MockHttpRequest {
      * @return MIMEタイプ
      */
     private MediaType getMediaType() {
-        String rawContentType = getHeader("Content-Type");
+        String rawContentType = getHeader(CONTENT_TYPE_KEY);
         if (StringUtil.hasValue(rawContentType)) {
             return new MediaType(rawContentType);
         }
@@ -81,7 +84,7 @@ public class RestMockHttpRequest extends MockHttpRequest {
      * @return {@link RestMockHttpRequest}自身
      */
     public RestMockHttpRequest setContentType(String contentType) {
-        getHeaderMap().put("Content-Type", contentType);
+        getHeaderMap().put(CONTENT_TYPE_KEY, contentType);
         return this;
     }
 
@@ -192,9 +195,9 @@ public class RestMockHttpRequest extends MockHttpRequest {
     private void setContentLength(Map<String, String> headers, String bodyStr) {
         int contentLength = bodyStr.getBytes().length;
         if (headers.containsKey(CONTENT_LENGTH_KEY)) {
-            String contentLengthOrg = headers.get(CONTENT_LENGTH_KEY);
-            if (Integer.parseInt(contentLengthOrg) != contentLength) {
-                throw new RuntimeException("wrong Content-Length[" + contentLengthOrg + "] was set."
+            String userSetLength = headers.get(CONTENT_LENGTH_KEY);
+            if (Integer.parseInt(userSetLength) != contentLength) {
+                throw new RuntimeException("wrong Content-Length[" + userSetLength + "] was set."
                         + "correct length is [" + contentLength + "].");
             }
         }
@@ -204,7 +207,7 @@ public class RestMockHttpRequest extends MockHttpRequest {
     }
 
     /**
-     * リクエストパラメータのMapをURLエンコードし結合する。
+     * リクエストパラメータのMapを"key=value(&key=value...)"の形式で結合する。
      *
      * @param paramMap リクエストパラメータ
      * @return URLエンコードされ結合されたリクエストパラメータ
