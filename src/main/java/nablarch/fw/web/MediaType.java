@@ -21,6 +21,11 @@ public class MediaType {
         }
 
         String[] parts = contentType.split(";");
+
+        if (StringUtil.isNullOrEmpty(parts[0].trim())) {
+            throw new IllegalArgumentException("media type must not be empty.");
+        }
+
         mediaType = parts[0].trim().toLowerCase();
     }
 

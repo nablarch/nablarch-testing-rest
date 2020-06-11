@@ -38,6 +38,20 @@ public class MediaTypeTest {
     }
 
     @Test
+    public void testConstructorEmptyMediaTypeArgShouldThrowException() {
+        expectedException.expect(IllegalArgumentException.class);
+        expectedException.expectMessage("media type must not be empty.");
+        new MediaType(" ");
+    }
+
+    @Test
+    public void testConstructorEmptyMediaTypeWithCharsetArgShouldThrowException() {
+        expectedException.expect(IllegalArgumentException.class);
+        expectedException.expectMessage("media type must not be empty.");
+        new MediaType(";" + CHARSET);
+    }
+
+    @Test
     public void testPlainContent() {
         MediaType sut = new MediaType(TEXT_PLAIN);
         assertEquals(TEXT_PLAIN_TYPE, sut);
