@@ -1,6 +1,7 @@
 package nablarch.fw.web;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.json.JsonWriteFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import mockit.Expectations;
@@ -98,22 +99,36 @@ public class JacksonBodyConverterTest {
     }
 
     /**
-     * {@link JacksonBodyConverter#configure(ObjectMapper)}のテスト。
-     * ObjectMapperの設定を切り替えられることを確認する。
+     * {@link JacksonBodyConverter}のテスト。
+     * Factoryクラスを差し替えることでObjectMapperの設定を切り替えられることを確認する。
      */
     @Test
     public void configureTest() {
-        JacksonBodyConverter snakeCaseWriter = new JacksonBodyConverter() {
-            @Override
-            protected void configure(ObjectMapper objectMapper) {
-                super.configure(objectMapper);
-                objectMapper.setPropertyNamingStrategy(PropertyNamingStrategy.SNAKE_CASE);
-            }
-        };
+        JacksonBodyConverter snakeCaseWriter = new SnakeCaseJacksonBodyConverter();
         TestDto dto = new TestDto("test body", "value");
         MediaType mediaTypeJson = new MediaType("application/json");
         assertEquals("{\"field\":\"test body\",\"property_name\":\"value\"}"
                 , snakeCaseWriter.convert(dto, mediaTypeJson));
+    }
+
+    /**
+     * {@link JacksonBodyConverter}の拡張クラス
+     * プロパティ名をsnake_caseに変換する。
+     */
+    private static class SnakeCaseJacksonBodyConverter extends JacksonBodyConverter {
+        public SnakeCaseJacksonBodyConverter() {
+            super(new SnakeCaseObjectMapperFactory());
+        }
+
+        private static class SnakeCaseObjectMapperFactory implements ObjectMapperFactory {
+            @Override
+            public ObjectMapper create() {
+                ObjectMapper objectMapper = new ObjectMapper();
+                objectMapper.getFactory().configure(JsonWriteFeature.ESCAPE_NON_ASCII.mappedFeature(), true);
+                objectMapper.setPropertyNamingStrategy(PropertyNamingStrategy.SNAKE_CASE);
+                return objectMapper;
+            }
+        }
     }
 
     /**

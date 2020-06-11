@@ -9,7 +9,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  */
 public class JacksonBodyConverter implements BodyConverter {
     /** 変換可能なMIMEタイプ */
-    public static final MediaType CONVERTIBLE_TYPE = new MediaType("application/json");
+    private static final MediaType CONVERTIBLE_TYPE = new MediaType("application/json");
 
     /** {@link ObjectMapper} */
     private final ObjectMapper objectMapper;
@@ -18,18 +18,11 @@ public class JacksonBodyConverter implements BodyConverter {
      * コンストラクタ。
      */
     public JacksonBodyConverter() {
-        objectMapper = new ObjectMapper();
-        configure(objectMapper);
+        this(new DefaultObjectMapperFactory());
     }
 
-    /**
-     * {@link ObjectMapper}に対するオプション設定などを行う。
-     * このクラスではNON_ASCII文字のエスケープ設定を行う。
-     *
-     * @param objectMapper {@link ObjectMapper}
-     */
-    protected void configure(ObjectMapper objectMapper) {
-        objectMapper.getFactory().configure(JsonWriteFeature.ESCAPE_NON_ASCII.mappedFeature(), true);
+    public JacksonBodyConverter(ObjectMapperFactory factory) {
+        objectMapper = factory.create();
     }
 
     @Override
@@ -43,6 +36,26 @@ public class JacksonBodyConverter implements BodyConverter {
             return objectMapper.writeValueAsString(body);
         } catch (JsonProcessingException e) {
             throw new IllegalArgumentException("body cannot convert to String. cause[" + e.getMessage() + "].", e);
+        }
+    }
+
+    /**
+     * {@link ObjectMapper}のfactoryインターフェイス
+     */
+    public interface ObjectMapperFactory {
+        ObjectMapper create();
+    }
+
+    /**
+     * デフォルト{@link ObjectMapperFactory}実装クラス。
+     * NON ASCII文字のエスケープのみ設定変更した{@link ObjectMapper}を生成する。
+     */
+    private static class DefaultObjectMapperFactory implements ObjectMapperFactory {
+        @Override
+        public ObjectMapper create() {
+            ObjectMapper objectMapper = new ObjectMapper();
+            objectMapper.getFactory().configure(JsonWriteFeature.ESCAPE_NON_ASCII.mappedFeature(), true);
+            return objectMapper;
         }
     }
 }
