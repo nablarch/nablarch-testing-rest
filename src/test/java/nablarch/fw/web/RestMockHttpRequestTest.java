@@ -6,10 +6,8 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
-import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.net.URLEncoder;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -256,26 +254,6 @@ public class RestMockHttpRequestTest {
         RestMockHttpRequest sut = new RestMockHttpRequest(
                 Collections.singletonList(new MockConverter()), "text/plain")
                 .setRequestUri("/test");
-        String request = sut.toString();
-        fail("ここには到達しない。" + request);
-    }
-
-    /**
-     * URLエンコードに失敗した場合、例外が送出されることを確認する。
-     */
-    @Test
-    public void testAbnormalUrlEncoderThrowsUnsupportedEncodingException() throws UnsupportedEncodingException {
-        new Expectations(URLEncoder.class) {{
-            URLEncoder.encode(anyString, "UTF-8");
-            result = new UnsupportedEncodingException("error utf-8");
-        }};
-        expectedException.expect(IllegalStateException.class);
-        expectedException.expectMessage("url encoding failed.");
-        expectedException.expectCause(CoreMatchers.<Throwable>instanceOf(UnsupportedEncodingException.class));
-        RestMockHttpRequest sut = new RestMockHttpRequest(
-                Collections.singletonList(new MockConverter()), "text/plain")
-                .setRequestUri("/test")
-                .setParam("name", "テスト");
         String request = sut.toString();
         fail("ここには到達しない。" + request);
     }

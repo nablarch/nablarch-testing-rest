@@ -2,10 +2,8 @@ package nablarch.fw.web;
 
 import nablarch.core.util.StringUtil;
 
-import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.net.URLEncoder;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
@@ -140,20 +138,20 @@ public class RestMockHttpRequest extends MockHttpRequest {
             throw new IllegalStateException("set only one of paramMap or body.");
         }
 
-        String encodedUri = urlEncode(getRequestUri());
-        String encodedParams = encodeParams(paramMap);
+        String uri = getRequestUri();
+        String params = concatParams(paramMap);
         String bodyStr = convertBody();
         Map<String, String> headers = new HashMap<String, String>(this.getHeaderMap());
 
-        if (StringUtil.hasValue(encodedParams)) {
+        if (StringUtil.hasValue(params)) {
             if ("GET".equals(getMethod())) {
-                if (encodedUri.contains("?")) {
-                    encodedUri = encodedUri + "&" + encodedParams;
+                if (uri.contains("?")) {
+                    uri += "&" + params;
                 } else {
-                    encodedUri = encodedUri + "?" + encodedParams;
+                    uri += "?" + params;
                 }
             } else {
-                bodyStr = encodedParams;
+                bodyStr = urlEncode(params);
             }
         }
 
@@ -164,7 +162,7 @@ public class RestMockHttpRequest extends MockHttpRequest {
         StringBuilder buffer = new StringBuilder();
         buffer.append(getMethod())
                 .append(' ')
-                .append(encodedUri)
+                .append(urlEncode(uri))
                 .append(' ')
                 .append(getHttpVersion())
                 .append(LS);
@@ -211,7 +209,7 @@ public class RestMockHttpRequest extends MockHttpRequest {
      * @param paramMap リクエストパラメータ
      * @return URLエンコードされ結合されたリクエストパラメータ
      */
-    private String encodeParams(Map<String, String[]> paramMap) {
+    private String concatParams(Map<String, String[]> paramMap) {
         if (paramMap.isEmpty()) {
             return null;
         }
@@ -224,7 +222,7 @@ public class RestMockHttpRequest extends MockHttpRequest {
             while (values.hasNext()) {
                 buffer.append(name)
                         .append("=")
-                        .append(encode(values.next()));
+                        .append(values.next());
                 if (values.hasNext()) {
                     buffer.append("&");
                 }
@@ -247,20 +245,6 @@ public class RestMockHttpRequest extends MockHttpRequest {
             return new URI(uri).toASCIIString();
         } catch (URISyntaxException e) {
             throw new IllegalArgumentException("url encoding failed. cause[" + e.getMessage() + "]", e);
-        }
-    }
-
-    /**
-     * UTF-8でURLエンコードする。
-     *
-     * @param value エンコード対象
-     * @return URLエンコードされた文字列
-     */
-    private String encode(String value) {
-        try {
-            return URLEncoder.encode(value, "UTF-8");
-        } catch (UnsupportedEncodingException e) {
-            throw new IllegalStateException("url encoding failed.", e);
         }
     }
 
