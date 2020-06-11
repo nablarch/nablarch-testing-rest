@@ -118,6 +118,21 @@ public class RestMockHttpRequest extends MockHttpRequest {
     }
 
     @Override
+    public RestMockHttpRequest setHttpVersion(String httpVersion) {
+        return (RestMockHttpRequest) super.setHttpVersion(httpVersion);
+    }
+
+    @Override
+    public RestMockHttpRequest setHost(String host) {
+        return (RestMockHttpRequest) super.setHost(host);
+    }
+
+    @Override
+    public RestMockHttpRequest setRequestPath(String requestPath) {
+        return (RestMockHttpRequest) super.setRequestPath(requestPath);
+    }
+
+    @Override
     public String toString() {
         Map<String, String[]> paramMap = getParamMap();
 

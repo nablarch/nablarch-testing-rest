@@ -35,6 +35,10 @@ public class RestMockHttpRequestTest {
     /** リクエストパラメータ付きのGETリクエスト */
     private static final String GET_REQUEST_WITH_QUERY = "GET /test?name=%E3%83%86%E3%82%B9%E3%83%88&value=%E3%82%B2%E3%83%83%E3%83%88%E3%83%AA%E3%82%AF%E3%82%A8%E3%82%B9%E3%83%88 HTTP/1.1" + LS
             + LS;
+    /** リクエストパラメータ付きのGETリクエスト */
+    private static final String GET_REQUEST_WITH_QUERY_AND_HOST = "GET /anotherPath?name=%E3%83%86%E3%82%B9%E3%83%88&value=%E3%82%B2%E3%83%83%E3%83%88%E3%83%AA%E3%82%AF%E3%82%A8%E3%82%B9%E3%83%88 HTTP/0.9" + LS
+            + "Host: localhost" + LS
+            + LS;
     /** 同名のリクエストパラメータを複数持つGETリクエスト */
     private static final String GET_REQUEST_WITH_QUERY_DUPLICATED_PARAM = "GET /test?name=%E3%83%86%E3%82%B9%E3%83%88&name=%E3%82%B2%E3%83%83%E3%83%88%E3%83%AA%E3%82%AF%E3%82%A8%E3%82%B9%E3%83%88 HTTP/1.1" + LS
             + LS;
@@ -82,13 +86,17 @@ public class RestMockHttpRequestTest {
     /**
      * GETリクエスト作成テスト。
      * クエリストリング付きのリクエストURIを指定したリクエストが想定通りに生成されることを確認する。
+     * over rideしたメソッドの戻り型が{@link RestMockHttpRequest}であることを確認する。
      */
     @Test
     public void testNormalGet2() {
         RestMockHttpRequest sut = new RestMockHttpRequest(Collections.singletonList(new MockConverter())
-                , "testType");
-        sut.setRequestUri("/test?name=テスト&value=ゲットリクエスト");
-        assertThat(sut.toString(), is(GET_REQUEST_WITH_QUERY));
+                , "testType")
+                .setHttpVersion("HTTP/0.9")
+                .setHost("localhost")
+                .setRequestUri("/test?name=テスト&value=ゲットリクエスト")
+                .setRequestPath("/anotherPath");
+        assertThat(sut.toString(), is(GET_REQUEST_WITH_QUERY_AND_HOST));
     }
 
     /**
