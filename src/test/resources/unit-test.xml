@@ -32,8 +32,8 @@
 
   <!-- テスト用HttpServerにJetty6を定義する -->
   <component name="httpServerFactory" class="nablarch.fw.web.httpserver.HttpServerFactoryJetty6"/>
-  <component name="httpTestConfiguration"
-             class="nablarch.test.core.http.HttpTestConfiguration">
+  <component name="restTestConfiguration"
+             class="nablarch.test.core.http.RestTestConfiguration">
     <property name="webBaseDir" value="src/test/web"/>
   </component>
 

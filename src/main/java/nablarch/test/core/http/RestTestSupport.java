@@ -50,7 +50,7 @@ public class RestTestSupport extends TestEventDispatcher {
     /** HTTPサーバファクトリのリポジトリキー */
     private static final String HTTP_SERVER_FACTORY_KEY = "httpServerFactory";
     /** RestTestConfigurationのリポジトリキー */
-    private static final String HTTP_TEST_CONFIGURATION_KEY = "httpTestConfiguration";
+    private static final String REST_TEST_CONFIGURATION_KEY = "restTestConfiguration";
     /** RestMockHttpRequestBuilderのリポジトリキー */
     private static final String HTTP_REQUEST_BUILDER_KEY = "restMockHttpRequestBuilder";
     /** TestDataParserのリポジトリキー */
@@ -92,7 +92,7 @@ public class RestTestSupport extends TestEventDispatcher {
     @Before
     public void setUp() {
         // HTTPテスト実行用設定情報の取得
-        HttpTestConfiguration config = SystemRepository.get(HTTP_TEST_CONFIGURATION_KEY);
+        RestTestConfiguration config = SystemRepository.get(REST_TEST_CONFIGURATION_KEY);
         initializeIfNotYet(config);
         setUpDbIfSheetExists(SETUP_TABLE_SHEET);
         setUpDbIfSheetExists(testDescription.getMethodName());
@@ -143,7 +143,7 @@ public class RestTestSupport extends TestEventDispatcher {
      *
      * @param config 設定定義
      */
-    private void initializeIfNotYet(HttpTestConfiguration config) {
+    private void initializeIfNotYet(RestTestConfiguration config) {
         if (!initialized) {
             createHttpServer(config);
             initialized = true;
@@ -156,7 +156,8 @@ public class RestTestSupport extends TestEventDispatcher {
     public static void resetHttpServer() {
         if (initialized) {
             server = null;
-            WebFrontController controller = SystemRepository.get("webFrontController");
+            RestTestConfiguration config = SystemRepository.get(REST_TEST_CONFIGURATION_KEY);
+            WebFrontController controller = SystemRepository.get(config.getWebFrontControllerKey());
             List<Handler> handlerQueue = controller.getHandlerQueue();
             handlerQueue.remove(0);
             initialized = false;
@@ -182,7 +183,7 @@ public class RestTestSupport extends TestEventDispatcher {
      *
      * @param config 設定定義
      */
-    private void createHttpServer(HttpTestConfiguration config) {
+    private void createHttpServer(RestTestConfiguration config) {
         // HTTPサーバ生成
         server = createHttpServer();
         // HttpTestConfigurationの値を設定する
@@ -193,7 +194,7 @@ public class RestTestSupport extends TestEventDispatcher {
         handler = new HttpRequestTestSupportHandler(config);
 
         // ハンドラキューの準備
-        WebFrontController controller = SystemRepository.get("webFrontController");
+        WebFrontController controller = SystemRepository.get(config.getWebFrontControllerKey());
         List<Handler> handlerQueue = controller.getHandlerQueue();
         handler.register(handlerQueue);
         server.setHandlerQueue(handlerQueue);
@@ -205,7 +206,7 @@ public class RestTestSupport extends TestEventDispatcher {
      * @param config 設定定義
      * @return Warベースパス
      */
-    private List<ResourceLocator> getWarBasePaths(HttpTestConfiguration config) {
+    private List<ResourceLocator> getWarBasePaths(RestTestConfiguration config) {
         String[] baseDirs = config.getWebBaseDir().split(",");
         List<ResourceLocator> basePaths = new ArrayList<ResourceLocator>(baseDirs.length);
         for (String dir : baseDirs) {
