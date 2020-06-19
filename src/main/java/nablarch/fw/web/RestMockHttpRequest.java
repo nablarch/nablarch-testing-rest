@@ -1,6 +1,7 @@
 package nablarch.fw.web;
 
 import nablarch.core.util.StringUtil;
+import nablarch.core.util.annotation.Published;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -13,6 +14,7 @@ import java.util.Map;
 /**
  * RESTfulウェブサービステスト用の{@link HttpRequest}モッククラス。
  */
+@Published
 public class RestMockHttpRequest extends MockHttpRequest {
 
     /** 改行文字 */
