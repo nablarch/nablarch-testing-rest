@@ -204,9 +204,7 @@ public class RestMockHttpRequest extends MockHttpRequest {
                         + "correct length is [" + contentLength + "].");
             }
         }
-        if (contentLength > 0) {
-            headers.put(CONTENT_LENGTH_KEY, String.valueOf(contentLength));
-        }
+        headers.put(CONTENT_LENGTH_KEY, String.valueOf(contentLength));
     }
 
     /**

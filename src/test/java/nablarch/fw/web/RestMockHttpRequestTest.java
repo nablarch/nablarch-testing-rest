@@ -186,6 +186,7 @@ public class RestMockHttpRequestTest {
 
         Map<String, String> headerMap = sut.getHeaderMap();
         headerMap.put("test", "OK");
+        headerMap.put("Content-Length", "19");
         sut.setMethod("POST")
                 .setRequestUri("/test")
                 .setHeaderMap(headerMap)
@@ -206,6 +207,26 @@ public class RestMockHttpRequestTest {
                 .setContentType("application/x-www-form-urlencoded")
                 .setParam("name", "テスト");
         assertThat(sut.toString(), is(POST_FORM_REQUEST));
+    }
+
+    /**
+     * POSTリクエスト作成テスト
+     * setBodyより前にsetContentTypeする
+     */
+    @Test
+    public void testNormalPost3() {
+        RestMockHttpRequest sut = new RestMockHttpRequest(
+                Collections.singletonList(new MockConverter()), "testType");
+        sut.setContentType("application/json");
+        sut.setBody("{\"field\" : \"value\"}");
+        Map<String, String> headerMap = sut.getHeaderMap();
+        headerMap.put("test", "OK");
+        headerMap.put("Content-Length", "19");
+        sut.setMethod("POST")
+                .setRequestUri("/test")
+                .setHeaderMap(headerMap)
+                .setCookie(MockHttpCookie.valueOf("cookie=dummy"));
+        assertThat(sut.toString(), is(POST_JSON_REQUEST));
     }
 
     @Rule
