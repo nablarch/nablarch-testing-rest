@@ -5,6 +5,7 @@ import mockit.Expectations;
 import mockit.Mocked;
 import nablarch.core.exception.IllegalConfigurationException;
 import nablarch.core.repository.SystemRepository;
+import nablarch.core.util.StringUtil;
 import nablarch.fw.web.HttpRequest;
 import nablarch.fw.web.HttpResponse;
 import nablarch.fw.web.RestMockHttpRequest;
@@ -31,6 +32,7 @@ import java.net.URL;
 
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 /**
@@ -56,8 +58,9 @@ public class RestTestSupportTest {
         public void testNormal() {
             HttpResponse response = sendRequest(get("/test"));
             assertStatusCode("200 OK", HttpResponse.Status.OK, response);
-            String sessionIdReplacedResponse = response.toString().replaceAll("JSESSIONID=.+;", "JSESSIONID=DUMMY;");
-            assertThat(readTextResource("response.txt"), is(sessionIdReplacedResponse));
+            assertThat(response.getContentLength(), is("0"));
+            assertThat(response.getContentType(), is("text/plain; charset=utf-8"));
+            assertTrue(StringUtil.isNullOrEmpty(response.getBodyString()));
         }
 
         /**
@@ -276,6 +279,13 @@ public class RestTestSupportTest {
             setDummyDescription(RestTestSupportTest.class, sut);
             sut.readTextResource("response.txt");
             fail("ここに到達したらExceptionが発生していない");
+        }
+
+        @Test
+        public void testReadTextResource() {
+            RestTestSupport sut = new RestTestSupport();
+            setDummyDescription(RestTestSupportTest.class, sut);
+            assertThat(sut.readTextResource("response.txt"), is("HTTP/1.1 200 OK"));
         }
 
         /**
