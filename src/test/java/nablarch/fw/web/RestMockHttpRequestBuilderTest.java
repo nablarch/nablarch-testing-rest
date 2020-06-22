@@ -20,7 +20,7 @@ public class RestMockHttpRequestBuilderTest {
     RestMockHttpRequestBuilder sut = new RestMockHttpRequestBuilder();
 
     /**
-     * 利用可能な{@link BodyConverter}のテスト。
+     * 利用可能な{@link RestTestBodyConverter}のテスト。
      * デフォルトでは{@link StringBodyConverter}と{@link JacksonBodyConverter}を持つこと
      * {@link RestMockHttpRequestBuilder#setBodyConverters(Collection)}で
      * bodyConvertersが設定できることを確認する。
@@ -29,18 +29,18 @@ public class RestMockHttpRequestBuilderTest {
     public void testBodyConverter() throws NoSuchFieldException, IllegalAccessException {
         Field convertersField = sut.getClass().getDeclaredField("bodyConverters");
         convertersField.setAccessible(true);
-        List<BodyConverter> defaultList = (List<BodyConverter>) convertersField.get(sut);
+        List<RestTestBodyConverter> defaultList = (List<RestTestBodyConverter>) convertersField.get(sut);
         assertEquals(2, defaultList.size());
-        for (BodyConverter converter : defaultList) {
+        for (RestTestBodyConverter converter : defaultList) {
             if (!(converter instanceof StringBodyConverter)
                     && !(converter instanceof JacksonBodyConverter)) {
                 fail("default BodyConverter list has unknown BodyConverter.");
             }
         }
 
-        List<BodyConverter> bodyConverters = Arrays.asList(new StringBodyConverter(), new JacksonBodyConverter());
+        List<RestTestBodyConverter> bodyConverters = Arrays.asList(new StringBodyConverter(), new JacksonBodyConverter());
         sut.setBodyConverters(bodyConverters);
-        List<BodyConverter> actual = (List<BodyConverter>) convertersField.get(sut);
+        List<RestTestBodyConverter> actual = (List<RestTestBodyConverter>) convertersField.get(sut);
         assertThat(actual, is(bodyConverters));
     }
 

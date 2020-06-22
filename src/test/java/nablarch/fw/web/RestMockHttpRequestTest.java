@@ -226,7 +226,7 @@ public class RestMockHttpRequestTest {
     }
 
     /**
-     * 指定したContent-Typeを書き出し可能な{@link BodyConverter}がない場合、例外が送出されることを確認する。
+     * 指定したContent-Typeを書き出し可能な{@link RestTestBodyConverter}がない場合、例外が送出されることを確認する。
      */
     @Test
     public void testAbnormalCouldNotFindBodyConverter() {
@@ -292,10 +292,10 @@ public class RestMockHttpRequestTest {
     }
 
     /**
-     * テスト用の{@link BodyConverter}実装。
+     * テスト用の{@link RestTestBodyConverter}実装。
      * Content-Typeが何であってもボディをStringにキャストして返す。
      */
-    private static class MockConverter implements BodyConverter {
+    private static class MockConverter implements RestTestBodyConverter {
         @Override
         public boolean isConvertible(Object body, MediaType mediaType) {
             return true;
@@ -308,10 +308,10 @@ public class RestMockHttpRequestTest {
     }
 
     /**
-     * テスト用の{@link BodyConverter}実装。
-     * {@link BodyConverter#isConvertible(Object, MediaType)}で常にfalseを返す。
+     * テスト用の{@link RestTestBodyConverter}実装。
+     * {@link RestTestBodyConverter#isConvertible(Object, MediaType)}で常にfalseを返す。
      */
-    private static class NoContentConvertibleMockConverter implements BodyConverter {
+    private static class NoContentConvertibleMockConverter implements RestTestBodyConverter {
 
         @Override
         public boolean isConvertible(Object body, MediaType mediaType) {

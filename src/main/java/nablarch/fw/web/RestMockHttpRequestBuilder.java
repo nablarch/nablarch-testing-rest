@@ -8,8 +8,8 @@ import java.util.Collection;
  */
 public class RestMockHttpRequestBuilder {
 
-    /** 利用可能な{@link BodyConverter} */
-    private Collection<? extends BodyConverter> bodyConverters = Arrays.asList(
+    /** 利用可能な{@link RestTestBodyConverter} */
+    private Collection<? extends RestTestBodyConverter> bodyConverters = Arrays.asList(
             new StringBodyConverter()
             , new JacksonBodyConverter()
     );
@@ -78,11 +78,11 @@ public class RestMockHttpRequestBuilder {
     }
 
     /**
-     * 利用可能な{@link BodyConverter}を設定する。
+     * 利用可能な{@link RestTestBodyConverter}を設定する。
      *
-     * @param bodyConverters {@link BodyConverter}
+     * @param bodyConverters {@link RestTestBodyConverter}
      */
-    public void setBodyConverters(Collection<? extends BodyConverter> bodyConverters) {
+    public void setBodyConverters(Collection<? extends RestTestBodyConverter> bodyConverters) {
         this.bodyConverters = bodyConverters;
     }
 }

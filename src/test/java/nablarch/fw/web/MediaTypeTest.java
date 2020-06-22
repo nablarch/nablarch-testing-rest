@@ -1,5 +1,6 @@
 package nablarch.fw.web;
 
+import nablarch.fw.web.RestTestBodyConverter.MediaType;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;

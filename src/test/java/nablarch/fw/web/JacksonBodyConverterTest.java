@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import mockit.Expectations;
 import mockit.Mocked;
+import nablarch.fw.web.RestTestBodyConverter.MediaType;
 import org.hamcrest.Matchers;
 import org.junit.Rule;
 import org.junit.Test;

@@ -1,5 +1,6 @@
 package nablarch.fw.web;
 
+import nablarch.fw.web.RestTestBodyConverter.MediaType;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;

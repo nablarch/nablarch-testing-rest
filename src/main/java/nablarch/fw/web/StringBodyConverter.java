@@ -1,9 +1,9 @@
 package nablarch.fw.web;
 
 /**
- * {@link String}型のbodyを返すための{@link BodyConverter}実装クラス。
+ * {@link String}型のbodyを返すための{@link RestTestBodyConverter}実装クラス。
  */
-public class StringBodyConverter implements BodyConverter {
+public class StringBodyConverter implements RestTestBodyConverter {
 
     @Override
     public boolean isConvertible(Object body, MediaType mediaType) {
