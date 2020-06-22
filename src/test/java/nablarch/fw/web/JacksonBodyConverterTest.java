@@ -22,18 +22,18 @@ public class JacksonBodyConverterTest {
     private final JacksonBodyConverter sut = new JacksonBodyConverter();
 
     /**
-     * {@link JacksonBodyConverter#isConvertible(Object, MediaType)}のテスト。
+     * {@link JacksonBodyConverter#isConvertible(Object, RestTestMediaType)}のテスト。
      */
     @Test
     public void testIsConvertible() {
         String stringBody = "body";
         TestDto dto = new TestDto("test body");
-        MediaType mediaTypeJson = new MediaType("application/json");
-        MediaType mediaTypeJsonUpperCase = new MediaType("APPLICATION/JSON");
-        MediaType mediaTypeJsonWithCharset = new MediaType("application/json; charset=utf-8");
-        MediaType mediaTypeJsonP = new MediaType("application/json-p");
-        MediaType mediaTypePlain = new MediaType("text/plain");
-        MediaType mediaTypeHtml = new MediaType("text/html");
+        RestTestMediaType mediaTypeJson = new RestTestMediaType("application/json");
+        RestTestMediaType mediaTypeJsonUpperCase = new RestTestMediaType("APPLICATION/JSON");
+        RestTestMediaType mediaTypeJsonWithCharset = new RestTestMediaType("application/json; charset=utf-8");
+        RestTestMediaType mediaTypeJsonP = new RestTestMediaType("application/json-p");
+        RestTestMediaType mediaTypePlain = new RestTestMediaType("text/plain");
+        RestTestMediaType mediaTypeHtml = new RestTestMediaType("text/html");
 
         assertTrue(sut.isConvertible(dto, mediaTypeJson));
         assertTrue(sut.isConvertible(dto, mediaTypeJsonUpperCase));
@@ -51,26 +51,26 @@ public class JacksonBodyConverterTest {
     }
 
     /**
-     * {@link JacksonBodyConverter#convert(Object, MediaType)}のテスト。
+     * {@link JacksonBodyConverter#convert(Object, RestTestMediaType)}のテスト。
      * JavaオブジェクトがJSON形式で書き出されることをテストする。
      */
     @Test
     public void testConvert() {
         TestDto dto = new TestDto("test body", "value");
-        MediaType mediaTypeJson = new MediaType("application/json");
+        RestTestMediaType mediaTypeJson = new RestTestMediaType("application/json");
         assertEquals("{\"field\":\"test body\",\"propertyName\":\"value\"}"
                 , sut.convert(dto, mediaTypeJson));
     }
 
     /**
-     * {@link JacksonBodyConverter#convert(Object, MediaType)}のテスト。
+     * {@link JacksonBodyConverter#convert(Object, RestTestMediaType)}のテスト。
      * JavaオブジェクトがJSON形式で書き出され、かつ
      * プロパティにマルチバイト文字を持つ場合エスケープされることをテストする。
      */
     @Test
     public void testConvertEscapeNonAscii() {
         TestDto dto = new TestDto("テスト", "バリュー");
-        MediaType mediaTypeJson = new MediaType("application/json");
+        RestTestMediaType mediaTypeJson = new RestTestMediaType("application/json");
         assertEquals("{\"field\":\"\\u30C6\\u30B9\\u30C8\",\"propertyName\":\"\\u30D0\\u30EA\\u30E5\\u30FC\"}"
                 , sut.convert(dto, mediaTypeJson));
     }
@@ -79,7 +79,7 @@ public class JacksonBodyConverterTest {
     public ExpectedException expectedException = ExpectedException.none();
 
     /**
-     * {@link JacksonBodyConverter#convert(Object, MediaType)}のテスト。
+     * {@link JacksonBodyConverter#convert(Object, RestTestMediaType)}のテスト。
      * {@link ObjectMapper#writeValueAsString(Object)}で例外が発生した場合
      * {@link IllegalArgumentException}が送出されることを確認する。
      */
@@ -90,7 +90,7 @@ public class JacksonBodyConverterTest {
         expectedException.expectMessage("body cannot convert to String. cause[write failed.].");
         expectedException.expectCause(Matchers.<Throwable>instanceOf(DummyJsonException.class));
         TestDto dto = new TestDto("test body", "value");
-        MediaType mediaTypeJson = new MediaType("application/json");
+        RestTestMediaType mediaTypeJson = new RestTestMediaType("application/json");
         new Expectations() {{
             objectMapper.writeValueAsString(any);
             result = new DummyJsonException("write failed.");
@@ -106,7 +106,7 @@ public class JacksonBodyConverterTest {
     public void configureTest() {
         JacksonBodyConverter snakeCaseWriter = new SnakeCaseJacksonBodyConverter();
         TestDto dto = new TestDto("test body", "value");
-        MediaType mediaTypeJson = new MediaType("application/json");
+        RestTestMediaType mediaTypeJson = new RestTestMediaType("application/json");
         assertEquals("{\"field\":\"test body\",\"property_name\":\"value\"}"
                 , snakeCaseWriter.convert(dto, mediaTypeJson));
     }

@@ -9,7 +9,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  */
 public class JacksonBodyConverter implements BodyConverter {
     /** 変換可能なMIMEタイプ */
-    private static final MediaType CONVERTIBLE_TYPE = new MediaType("application/json");
+    private static final RestTestMediaType CONVERTIBLE_TYPE = new RestTestMediaType("application/json");
 
     /** {@link ObjectMapper} */
     private final ObjectMapper objectMapper;
@@ -26,12 +26,12 @@ public class JacksonBodyConverter implements BodyConverter {
     }
 
     @Override
-    public boolean isConvertible(Object body, MediaType mediaType) {
+    public boolean isConvertible(Object body, RestTestMediaType mediaType) {
         return CONVERTIBLE_TYPE.equals(mediaType);
     }
 
     @Override
-    public String convert(Object body, MediaType mediaType) {
+    public String convert(Object body, RestTestMediaType mediaType) {
         try {
             return objectMapper.writeValueAsString(body);
         } catch (JsonProcessingException e) {

@@ -12,7 +12,7 @@ public interface BodyConverter {
      * @param mediaType Content-Type
      * @return 変換できる場合はtrue
      */
-    boolean isConvertible(Object body, MediaType mediaType);
+    boolean isConvertible(Object body, RestTestMediaType mediaType);
 
     /**
      * bodyを文字列に変換する。
@@ -21,5 +21,5 @@ public interface BodyConverter {
      * @param mediaType Content-Type
      * @return bodyを変換した文字列
      */
-    String convert(Object body, MediaType mediaType);
+    String convert(Object body, RestTestMediaType mediaType);
 }

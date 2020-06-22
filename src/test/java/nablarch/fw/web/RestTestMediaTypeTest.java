@@ -10,19 +10,19 @@ import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 
 /**
- * {@link MediaType}のテストクラス
+ * {@link RestTestMediaType}のテストクラス
  */
-public class MediaTypeTest {
+public class RestTestMediaTypeTest {
     @Rule
     public ExpectedException expectedException = ExpectedException.none();
     private static final String TEXT_PLAIN = "text/plain";
     private static final String TEXT_PLAIN_UPPER_CASE = "TEXT/PLAIN";
     private static final String TEXT_PLAIN_WITH_SPACE = " TEXT/plain ";
     private static final String MULTIPART = "multipart/form-data";
-    private static final MediaType TEXT_PLAIN_TYPE = new MediaType(TEXT_PLAIN);
-    private static final MediaType TEXT_PLAIN_UPPER_CASE_TYPE = new MediaType(TEXT_PLAIN_UPPER_CASE);
-    private static final MediaType TEXT_PLAIN_WITH_SPACE_TYPE = new MediaType(TEXT_PLAIN_WITH_SPACE);
-    private static final MediaType MULTIPART_TYPE = new MediaType(MULTIPART);
+    private static final RestTestMediaType TEXT_PLAIN_TYPE = new RestTestMediaType(TEXT_PLAIN);
+    private static final RestTestMediaType TEXT_PLAIN_UPPER_CASE_TYPE = new RestTestMediaType(TEXT_PLAIN_UPPER_CASE);
+    private static final RestTestMediaType TEXT_PLAIN_WITH_SPACE_TYPE = new RestTestMediaType(TEXT_PLAIN_WITH_SPACE);
+    private static final RestTestMediaType MULTIPART_TYPE = new RestTestMediaType(MULTIPART);
     private static final String CHARSET = "charset=UTF8";
     private static final String BOUNDARY = "boundary=aBoundary";
 
@@ -33,7 +33,7 @@ public class MediaTypeTest {
     public void testConstructorNullArgShouldThrowException() {
         expectedException.expect(IllegalArgumentException.class);
         expectedException.expectMessage("content type must not be empty.");
-        new MediaType(null);
+        new RestTestMediaType(null);
     }
 
     /**
@@ -43,7 +43,7 @@ public class MediaTypeTest {
     public void testConstructorEmptyArgShouldThrowException() {
         expectedException.expect(IllegalArgumentException.class);
         expectedException.expectMessage("content type must not be empty.");
-        new MediaType("");
+        new RestTestMediaType("");
     }
 
     /**
@@ -53,7 +53,7 @@ public class MediaTypeTest {
     public void testConstructorEmptyMediaTypeArgShouldThrowException() {
         expectedException.expect(IllegalArgumentException.class);
         expectedException.expectMessage("media type must not be empty.");
-        new MediaType(" ");
+        new RestTestMediaType(" ");
     }
 
     /**
@@ -63,53 +63,53 @@ public class MediaTypeTest {
     public void testConstructorEmptyMediaTypeWithCharsetArgShouldThrowException() {
         expectedException.expect(IllegalArgumentException.class);
         expectedException.expectMessage("media type must not be empty.");
-        new MediaType(";" + CHARSET);
+        new RestTestMediaType(";" + CHARSET);
     }
 
     /**
-     * 小文字のContent-Typeから生成した{@link MediaType}が
+     * 小文字のContent-Typeから生成した{@link RestTestMediaType}が
      * 同じContent-Type、大文字のContent-Type、
-     * スペースが含まれているContent-Typeのそれぞれから生成した{@link MediaType}と
+     * スペースが含まれているContent-Typeのそれぞれから生成した{@link RestTestMediaType}と
      * 同値として評価されることを確認する。
      */
     @Test
     public void testPlainContent() {
-        MediaType sut = new MediaType(TEXT_PLAIN);
+        RestTestMediaType sut = new RestTestMediaType(TEXT_PLAIN);
         assertEquals(TEXT_PLAIN_TYPE, sut);
         assertEquals(TEXT_PLAIN_UPPER_CASE_TYPE, sut);
         assertEquals(TEXT_PLAIN_WITH_SPACE_TYPE, sut);
     }
 
     /**
-     * charset付きのContent-Typeから想定通りの{@link MediaType}が
+     * charset付きのContent-Typeから想定通りの{@link RestTestMediaType}が
      * 生成されることを確認する。
      */
     @Test
     public void testPlainContentWithCharset() {
-        MediaType sut = new MediaType(TEXT_PLAIN + ";" + CHARSET);
+        RestTestMediaType sut = new RestTestMediaType(TEXT_PLAIN + ";" + CHARSET);
         assertEquals(TEXT_PLAIN_TYPE, sut);
     }
 
     /**
-     * boundary付きのContent-Typeから想定通りの{@link MediaType}が
+     * boundary付きのContent-Typeから想定通りの{@link RestTestMediaType}が
      * 生成されることを確認する。
      */
     @Test
     public void testMultipartWithBoundary() {
-        MediaType sut = new MediaType(MULTIPART + ";" + BOUNDARY);
+        RestTestMediaType sut = new RestTestMediaType(MULTIPART + ";" + BOUNDARY);
         assertEquals(MULTIPART_TYPE, sut);
     }
 
     /**
-     * {@link MediaType#equals(Object)}、{@link MediaType#hashCode()}が
+     * {@link RestTestMediaType#equals(Object)}、{@link RestTestMediaType#hashCode()}が
      * 一般契約に従っていることを確認する。
      */
     @Test
     public void testOverriddenEqualsAndHashCode() {
-        MediaType x = new MediaType("content_type");
-        MediaType y = new MediaType("CONTENT_TYPE");
-        MediaType z = new MediaType("Content_Type");
-        MediaType other = new MediaType("other");
+        RestTestMediaType x = new RestTestMediaType("content_type");
+        RestTestMediaType y = new RestTestMediaType("CONTENT_TYPE");
+        RestTestMediaType z = new RestTestMediaType("Content_Type");
+        RestTestMediaType other = new RestTestMediaType("other");
 
         assertTrue(x.equals(x));
         assertTrue(x.equals(y) && y.equals(x));

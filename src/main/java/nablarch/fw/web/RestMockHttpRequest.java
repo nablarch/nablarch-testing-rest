@@ -71,10 +71,10 @@ public class RestMockHttpRequest extends MockHttpRequest {
      *
      * @return MIMEタイプ
      */
-    private MediaType getMediaType() {
+    private RestTestMediaType getMediaType() {
         String contentType = getHeader(CONTENT_TYPE_KEY);
         if (StringUtil.hasValue(contentType)) {
-            return new MediaType(contentType);
+            return new RestTestMediaType(contentType);
         }
         return null;
     }
@@ -262,7 +262,7 @@ public class RestMockHttpRequest extends MockHttpRequest {
         if (body == null) {
             return null;
         }
-        MediaType mediaType = getMediaType();
+        RestTestMediaType mediaType = getMediaType();
         if (mediaType != null) {
             BodyConverter detectedBodyConverter = findBodyConverter(mediaType);
             return detectedBodyConverter.convert(body, mediaType);
@@ -276,7 +276,7 @@ public class RestMockHttpRequest extends MockHttpRequest {
      *
      * @return 見つかった{@link HttpBodyWriter}
      */
-    private BodyConverter findBodyConverter(MediaType mediaType) {
+    private BodyConverter findBodyConverter(RestTestMediaType mediaType) {
         for (BodyConverter bodyConverter : bodyConverters) {
             if (bodyConverter.isConvertible(body, mediaType)) {
                 return bodyConverter;
