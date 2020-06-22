@@ -17,7 +17,7 @@ public class TestDescriptionTest {
      */
     @Test
     public void getTestClassTest() {
-        assertEquals(sut.getTestClass(), this.getClass());
+        assertEquals(this.getClass(), sut.getTestClass());
     }
 
     /**
@@ -25,7 +25,7 @@ public class TestDescriptionTest {
      */
     @Test
     public void getTestClassSimpleNameTest() {
-        assertEquals(sut.getTestClassSimpleName(), "TestDescriptionTest");
+        assertEquals("TestDescriptionTest", sut.getTestClassSimpleName());
     }
 
     /**
@@ -33,6 +33,6 @@ public class TestDescriptionTest {
      */
     @Test
     public void getMethodNameTest() {
-        assertEquals(sut.getMethodName(), "getMethodNameTest");
+        assertEquals("getMethodNameTest", sut.getMethodName());
     }
 }

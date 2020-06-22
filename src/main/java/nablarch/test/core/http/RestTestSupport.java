@@ -106,7 +106,7 @@ public class RestTestSupport extends TestEventDispatcher {
     public RestMockHttpRequestBuilder getHttpRequestBuilder() {
         RestMockHttpRequestBuilder requestBuilder = SystemRepository.get(HTTP_REQUEST_BUILDER_KEY);
         if (requestBuilder == null) {
-            throw new IllegalConfigurationException("could not find component. name=[" + HTTP_REQUEST_BUILDER_KEY + "].");
+            throw new IllegalConfigurationException(createNoComponentMessage(HTTP_REQUEST_BUILDER_KEY));
         }
         return requestBuilder;
     }
@@ -140,6 +140,7 @@ public class RestTestSupport extends TestEventDispatcher {
      *
      * @param config 設定定義
      */
+    @SuppressWarnings("squid:S2696") // テスト全体で一度だけ実行するため、staticフィールドをnon-staticなメソッドから初期化する
     private void initializeIfNotYet(RestTestConfiguration config) {
         if (!initialized) {
             createHttpServer(config);
@@ -176,6 +177,7 @@ public class RestTestSupport extends TestEventDispatcher {
      *
      * @param config 設定定義
      */
+    @SuppressWarnings("squid:S2696") // テスト全体で一度だけ実行するため、staticフィールドをnon-staticなメソッドから初期化する
     private void createHttpServer(RestTestConfiguration config) {
         // HTTPサーバ生成
         server = createHttpServer();
@@ -217,7 +219,7 @@ public class RestTestSupport extends TestEventDispatcher {
     private HttpServer createHttpServer() {
         HttpServerFactory factory = SystemRepository.get(HTTP_SERVER_FACTORY_KEY);
         if (factory == null) {
-            throw new IllegalConfigurationException("could not find component. name=[" + HTTP_SERVER_FACTORY_KEY + "].");
+            throw new IllegalConfigurationException(createNoComponentMessage(HTTP_SERVER_FACTORY_KEY));
         }
         return factory.create();
     }
@@ -404,13 +406,12 @@ public class RestTestSupport extends TestEventDispatcher {
      * @param sheetName         期待値を格納したシート名
      * @param groupId           グループID（オプション）
      * @param failIfNoDataFound データが存在しない場合に例外とするかどうか
-     * @throws IllegalArgumentException 期待値のデータが存在せず、failIfNoDataFoundが真の場合
      * @see nablarch.test.core.db.DbAccessTestSupport#assertTableEquals(String, String, String, boolean)
      */
     public void assertTableEquals(String message,
                                   String sheetName,
                                   String groupId,
-                                  boolean failIfNoDataFound) throws IllegalArgumentException {
+                                  boolean failIfNoDataFound) {
         dbSupport.assertTableEquals(message, sheetName, groupId, failIfNoDataFound);
     }
 
@@ -547,11 +548,14 @@ public class RestTestSupport extends TestEventDispatcher {
     public final TestDataParser getTestDataParser() {
         TestDataParser parser = SystemRepository.get(TEST_DATA_PARSER_KEY);
         if (parser == null) {
-            throw new IllegalConfigurationException("could not find component. name=[" + TEST_DATA_PARSER_KEY + "].");
+            throw new IllegalConfigurationException(createNoComponentMessage(TEST_DATA_PARSER_KEY));
         }
         return parser;
     }
 
+    private String createNoComponentMessage(String componentKey) {
+        return "could not find component. name=[" + componentKey + "].";
+    }
 
     /**
      * GETのHTTPメソッドで{@link RestMockHttpRequest}を生成する。
