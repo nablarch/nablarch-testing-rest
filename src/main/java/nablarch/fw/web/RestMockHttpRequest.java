@@ -20,8 +20,8 @@ public class RestMockHttpRequest extends MockHttpRequest {
     /** 改行文字 */
     private static final String LS = "\r\n";
 
-    /** bodyを書き出すために利用可能な{@link BodyConverter} */
-    private final Collection<? extends BodyConverter> bodyConverters;
+    /** bodyを書き出すために利用可能な{@link RestTestBodyConverter} */
+    private final Collection<? extends RestTestBodyConverter> bodyConverters;
     /** デフォルトContent-Type */
     private final String defaultContentType;
     /** リクエストボディ */
@@ -32,12 +32,12 @@ public class RestMockHttpRequest extends MockHttpRequest {
     private static final String CONTENT_LENGTH_KEY = "Content-Length";
 
     /**
-     * 引数で渡された{@link BodyConverter}の{@link Collection}とデフォルトContent-Typeを持つオブジェクトを生成する。
+     * 引数で渡された{@link RestTestBodyConverter}の{@link Collection}とデフォルトContent-Typeを持つオブジェクトを生成する。
      *
-     * @param bodyConverters     利用可能な{@link BodyConverter}
+     * @param bodyConverters     利用可能な{@link RestTestBodyConverter}
      * @param defaultContentType デフォルトContent-Type
      */
-    public RestMockHttpRequest(Collection<? extends BodyConverter> bodyConverters,
+    public RestMockHttpRequest(Collection<? extends RestTestBodyConverter> bodyConverters,
                                String defaultContentType) {
         this.bodyConverters = bodyConverters;
         this.defaultContentType = defaultContentType;
@@ -264,7 +264,7 @@ public class RestMockHttpRequest extends MockHttpRequest {
         }
         RestTestMediaType mediaType = getMediaType();
         if (mediaType != null) {
-            BodyConverter detectedBodyConverter = findBodyConverter(mediaType);
+            RestTestBodyConverter detectedBodyConverter = findBodyConverter(mediaType);
             return detectedBodyConverter.convert(body, mediaType);
         } else {
             throw new RuntimeException("there was no Content-Type header but body was not empty.");
@@ -272,12 +272,12 @@ public class RestMockHttpRequest extends MockHttpRequest {
     }
 
     /**
-     * MIMEタイプに合った{@link BodyConverter}を見つける。
+     * MIMEタイプに合った{@link RestTestBodyConverter}を見つける。
      *
      * @return 見つかった{@link HttpBodyWriter}
      */
-    private BodyConverter findBodyConverter(RestTestMediaType mediaType) {
-        for (BodyConverter bodyConverter : bodyConverters) {
+    private RestTestBodyConverter findBodyConverter(RestTestMediaType mediaType) {
+        for (RestTestBodyConverter bodyConverter : bodyConverters) {
             if (bodyConverter.isConvertible(body, mediaType)) {
                 return bodyConverter;
             }

@@ -167,7 +167,7 @@ public class RestTestSupport extends TestEventDispatcher {
             setUpDb(sheetName);
         } else {
             LOGGER.logDebug("skipped setUpDb because test data [resource: "
-                    + getResourceName(sheetName) + "] was not fount.");
+                    + getResourceName(sheetName) + "] was not found.");
         }
     }
 

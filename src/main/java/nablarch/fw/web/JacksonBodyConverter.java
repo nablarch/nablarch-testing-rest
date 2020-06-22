@@ -5,9 +5,9 @@ import com.fasterxml.jackson.core.json.JsonWriteFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
- * Jacksonを使用してbodyを変換するための{@link BodyConverter}実装クラス。
+ * Jacksonを使用してbodyを変換するための{@link RestTestBodyConverter}実装クラス。
  */
-public class JacksonBodyConverter implements BodyConverter {
+public class JacksonBodyConverter implements RestTestBodyConverter {
     /** 変換可能なMIMEタイプ */
     private static final RestTestMediaType CONVERTIBLE_TYPE = new RestTestMediaType("application/json");
 
