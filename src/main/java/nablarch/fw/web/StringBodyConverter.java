@@ -6,12 +6,12 @@ package nablarch.fw.web;
 public class StringBodyConverter implements RestTestBodyConverter {
 
     @Override
-    public boolean isConvertible(Object body, RestTestMediaType mediaType) {
+    public boolean isConvertible(Object body, MediaType mediaType) {
         return body instanceof String;
     }
 
     @Override
-    public String convert(Object body, RestTestMediaType mediaType) {
+    public String convert(Object body, MediaType mediaType) {
         return (String) body;
     }
 }

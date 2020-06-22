@@ -1,5 +1,6 @@
 package nablarch.fw.web;
 
+import nablarch.fw.web.RestTestBodyConverter.MediaType;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
@@ -13,15 +14,15 @@ public class StringBodyConverterTest {
     StringBodyConverter sut = new StringBodyConverter();
 
     /**
-     * {@link StringBodyConverter#isConvertible(Object, RestTestMediaType)}のテスト。
+     * {@link StringBodyConverter#isConvertible(Object, MediaType)}のテスト。
      */
     @Test
     public void isWritableTest() {
         String stringBody = "body";
         int intBody = 1;
-        RestTestMediaType mediaTypePlain = new RestTestMediaType("text/plain");
-        RestTestMediaType mediaTypePlainUpperCase = new RestTestMediaType("TEXT/PLAIN");
-        RestTestMediaType mediaTypeJsonWithCharset = new RestTestMediaType("application/json; charset=utf-8");
+        MediaType mediaTypePlain = new MediaType("text/plain");
+        MediaType mediaTypePlainUpperCase = new MediaType("TEXT/PLAIN");
+        MediaType mediaTypeJsonWithCharset = new MediaType("application/json; charset=utf-8");
 
         assertTrue(sut.isConvertible(stringBody, mediaTypePlain));
         assertTrue(sut.isConvertible(stringBody, mediaTypePlainUpperCase));
@@ -33,12 +34,12 @@ public class StringBodyConverterTest {
     }
 
     /**
-     * {@link StringBodyConverter#convert(Object, RestTestMediaType)}のテスト。
+     * {@link StringBodyConverter#convert(Object, MediaType)}のテスト。
      */
     @Test
     public void writeTest() {
         String body = "test body";
-        RestTestMediaType mediaTypePlain = new RestTestMediaType("text/plain");
+        MediaType mediaTypePlain = new MediaType("text/plain");
         assertEquals(body, sut.convert(body, mediaTypePlain));
     }
 }

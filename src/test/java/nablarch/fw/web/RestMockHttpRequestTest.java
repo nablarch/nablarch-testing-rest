@@ -297,29 +297,29 @@ public class RestMockHttpRequestTest {
      */
     private static class MockConverter implements RestTestBodyConverter {
         @Override
-        public boolean isConvertible(Object body, RestTestMediaType mediaType) {
+        public boolean isConvertible(Object body, MediaType mediaType) {
             return true;
         }
 
         @Override
-        public String convert(Object body, RestTestMediaType mediaType) {
+        public String convert(Object body, MediaType mediaType) {
             return (String) body;
         }
     }
 
     /**
      * テスト用の{@link RestTestBodyConverter}実装。
-     * {@link RestTestBodyConverter#isConvertible(Object, RestTestMediaType)}で常にfalseを返す。
+     * {@link RestTestBodyConverter#isConvertible(Object, MediaType)}で常にfalseを返す。
      */
     private static class NoContentConvertibleMockConverter implements RestTestBodyConverter {
 
         @Override
-        public boolean isConvertible(Object body, RestTestMediaType mediaType) {
+        public boolean isConvertible(Object body, MediaType mediaType) {
             return false;
         }
 
         @Override
-        public String convert(Object body, RestTestMediaType mediaType) {
+        public String convert(Object body, MediaType mediaType) {
             return null;
         }
     }
