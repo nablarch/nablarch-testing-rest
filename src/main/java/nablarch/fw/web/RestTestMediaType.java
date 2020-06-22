@@ -5,7 +5,7 @@ import nablarch.core.util.StringUtil;
 /**
  * MIMEタイプを表すクラス
  */
-class RestTestMediaType {
+public class RestTestMediaType {
     /** MIMEタイプ */
     private final String mediaType;
 
@@ -15,7 +15,7 @@ class RestTestMediaType {
      *
      * @param contentType Content-Typeヘッダーの値
      */
-    RestTestMediaType(String contentType) {
+    public RestTestMediaType(String contentType) {
         if (StringUtil.isNullOrEmpty(contentType)) {
             throw new IllegalArgumentException("content type must not be empty.");
         }
