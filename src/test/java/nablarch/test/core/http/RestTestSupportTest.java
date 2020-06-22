@@ -281,6 +281,13 @@ public class RestTestSupportTest {
             fail("ここに到達したらExceptionが発生していない");
         }
 
+        @Test
+        public void testReadTextResource() {
+            RestTestSupport sut = new RestTestSupport();
+            setDummyDescription(RestTestSupportTest.class, sut);
+            assertThat(sut.readTextResource("response.txt"), is("HTTP/1.1 200 OK"));
+        }
+
         /**
          * staticなHttpServerを初期化する。
          */
