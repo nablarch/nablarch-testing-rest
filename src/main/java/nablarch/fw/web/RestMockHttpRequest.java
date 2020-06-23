@@ -161,7 +161,7 @@ public class RestMockHttpRequest extends MockHttpRequest {
 
         Map<String, String> headers = new HashMap<String, String>(this.getHeaderMap());
         if (StringUtil.hasValue(bodyStr)) {
-            setContentLength(headers, bodyStr);
+            setContentLength(headers, bodyStr); // NOSONAR SonarQubeがStringUtil#hasValueしているにも関わらずbodyStrはNullの可能性があると警告するので抑制
         }
 
         StringBuilder buffer = new StringBuilder();
