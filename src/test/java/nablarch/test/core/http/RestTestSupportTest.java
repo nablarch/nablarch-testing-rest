@@ -29,6 +29,7 @@ import java.io.InputStream;
 import java.lang.annotation.Annotation;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.charset.Charset;
 
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
@@ -59,7 +60,8 @@ public class RestTestSupportTest {
             HttpResponse response = sendRequest(get("/test"));
             assertStatusCode("200 OK", HttpResponse.Status.OK, response);
             assertThat(response.getContentLength(), is("0"));
-            assertThat(response.getContentType(), is("text/plain; charset=utf-8"));
+            assertTrue(response.getContentType().startsWith("text/plain"));
+            assertThat(response.getCharset(), is(Charset.forName("UTF-8")));
             assertTrue(StringUtil.isNullOrEmpty(response.getBodyString()));
         }
 

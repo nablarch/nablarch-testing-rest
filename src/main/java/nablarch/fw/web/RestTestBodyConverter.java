@@ -30,7 +30,7 @@ public interface RestTestBodyConverter {
      */
     class MediaType {
         /** MIMEタイプ */
-        private final String mediaType;
+        private final String value;
 
         /**
          * コンストラクタ。
@@ -44,29 +44,29 @@ public interface RestTestBodyConverter {
             }
 
             String[] parts = contentType.split(";");
-            String mediaType = parts[0].trim().toLowerCase();
+            String mediaTypeFromArgument = parts[0].trim().toLowerCase();
 
-            if (StringUtil.isNullOrEmpty(mediaType)) {
+            if (StringUtil.isNullOrEmpty(mediaTypeFromArgument)) {
                 throw new IllegalArgumentException("media type must not be empty.");
             }
 
-            this.mediaType = mediaType;
+            this.value = mediaTypeFromArgument;
         }
 
         @Override
         public boolean equals(Object obj) {
             return obj instanceof MediaType
-                    && mediaType.equals(((MediaType) obj).mediaType);
+                    && value.equals(((MediaType) obj).value);
         }
 
         @Override
         public int hashCode() {
-            return mediaType.hashCode();
+            return value.hashCode();
         }
 
         @Override
         public String toString() {
-            return mediaType;
+            return value;
         }
     }
 }
