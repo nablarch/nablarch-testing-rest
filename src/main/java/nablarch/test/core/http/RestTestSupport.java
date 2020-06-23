@@ -140,7 +140,6 @@ public class RestTestSupport extends TestEventDispatcher {
      *
      * @param config 設定定義
      */
-    @SuppressWarnings("squid:S2696") // テスト全体で一度だけ実行するため、staticフィールドをnon-staticなメソッドから初期化する
     private void initializeIfNotYet(RestTestConfiguration config) {
         if (!initialized) {
             createHttpServer(config);
@@ -177,7 +176,6 @@ public class RestTestSupport extends TestEventDispatcher {
      *
      * @param config 設定定義
      */
-    @SuppressWarnings("squid:S2696") // テスト全体で一度だけ実行するため、staticフィールドをnon-staticなメソッドから初期化する
     private void createHttpServer(RestTestConfiguration config) {
         // HTTPサーバ生成
         server = createHttpServer();
