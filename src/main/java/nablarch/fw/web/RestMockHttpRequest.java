@@ -194,6 +194,7 @@ public class RestMockHttpRequest extends MockHttpRequest {
      * @param headers ヘッダー
      * @param bodyStr リクエストボディ
      */
+    @SuppressWarnings("findbugs:DM_DEFAULT_ENCODING") // 既存のNTF実装に合わせて文字コード指定なしのgetBytes()を使用する
     private void setContentLength(Map<String, String> headers, String bodyStr) {
         int contentLength = bodyStr.getBytes().length;
         if (headers.containsKey(CONTENT_LENGTH_KEY)) {

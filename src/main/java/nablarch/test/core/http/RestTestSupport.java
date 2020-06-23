@@ -140,7 +140,7 @@ public class RestTestSupport extends TestEventDispatcher {
      *
      * @param config 設定定義
      */
-    private void initializeIfNotYet(RestTestConfiguration config) {
+    private static void initializeIfNotYet(RestTestConfiguration config) {
         if (!initialized) {
             createHttpServer(config);
             initialized = true;
@@ -176,7 +176,7 @@ public class RestTestSupport extends TestEventDispatcher {
      *
      * @param config 設定定義
      */
-    private void createHttpServer(RestTestConfiguration config) {
+    private static void createHttpServer(RestTestConfiguration config) {
         // HTTPサーバ生成
         server = createHttpServer();
         // HttpTestConfigurationの値を設定する
@@ -199,7 +199,7 @@ public class RestTestSupport extends TestEventDispatcher {
      * @param config 設定定義
      * @return Warベースパス
      */
-    private List<ResourceLocator> getWarBasePaths(RestTestConfiguration config) {
+    private static List<ResourceLocator> getWarBasePaths(RestTestConfiguration config) {
         String[] baseDirs = config.getWebBaseDir().split(",");
         List<ResourceLocator> basePaths = new ArrayList<ResourceLocator>(baseDirs.length);
         for (String dir : baseDirs) {
@@ -214,7 +214,7 @@ public class RestTestSupport extends TestEventDispatcher {
      *
      * @return HttpServerのインスタンス
      */
-    private HttpServer createHttpServer() {
+    private static HttpServer createHttpServer() {
         HttpServerFactory factory = SystemRepository.get(HTTP_SERVER_FACTORY_KEY);
         if (factory == null) {
             throw new IllegalConfigurationException(createNoComponentMessage(HTTP_SERVER_FACTORY_KEY));
@@ -551,7 +551,7 @@ public class RestTestSupport extends TestEventDispatcher {
         return parser;
     }
 
-    private String createNoComponentMessage(String componentKey) {
+    private static String createNoComponentMessage(String componentKey) {
         return "could not find component. name=[" + componentKey + "].";
     }
 
