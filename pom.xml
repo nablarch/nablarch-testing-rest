@@ -83,7 +83,7 @@
       <build>
         <testResources>
           <testResource>
-            <directory>${project.basedir}/src/java11/resources</directory>
+            <directory>${project.basedir}/src/test/java11-resources</directory>
           </testResource>
           <testResource>
             <directory>${project.basedir}/src/test/resources</directory>
