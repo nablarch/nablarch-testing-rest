@@ -5,8 +5,12 @@
     xsi:schemaLocation="http://tis.co.jp/nablarch/component-configuration https://nablarch.github.io/schema/component-configuration.xsd">
 
   <!-- テスティングフレームワークの設定 -->
-  <!--  <import file="nablarch/test/test-data.xml"/>-->
+  <!-- 
+    "nablarch/test/test-data.xml"で読み込んでいる"nablarch/test/test-data.config"の代わりに
+    resource-rootの設定がない以下のconfigファイルを読み込む
+   -->
   <config-file file="nablarch/test/core/http/resource-root-less-test-data.config"/>
+  <!-- "nablarch/test/test-data.xml"の設定をこのファイルに記載する -->
   <!-- TestDataParser -->
   <component name="testDataParser" class="nablarch.test.core.reader.BasicTestDataParser">
     <property name="testDataReader">
