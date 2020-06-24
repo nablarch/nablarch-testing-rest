@@ -211,6 +211,27 @@ public class RestTestSupportTest {
         }
 
         /**
+         * SystemRepositoryにnablarch.test.resource-rootが登録されていない場合、
+         * デフォルト値が採用されエラーとならないことを確認する。
+         */
+        @Test
+        public void testSetUp_resourceRootIsNotSet() {
+            RestTestSupport sut = new RestTestSupport();
+            setDummyDescription(RestTestSupport.class, sut);
+            RepositoryInitializer.recreateRepository("nablarch/test/core/http/no-resource-root.xml");
+            try {
+                RestTestSupport.resetHttpServer();
+                try {
+                    sut.setUp();
+                } catch (Exception e) {
+                    fail(e.getMessage());
+                }
+            } finally {
+                RepositoryInitializer.revertDefaultRepository();
+            }
+        }
+
+        /**
          * {@link WorkbookFactory}が例外を送出した場合、{@link RuntimeException}が送出されることを確認する。
          *
          * @param factory モック化された{@link WorkbookFactory}
