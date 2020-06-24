@@ -24,7 +24,7 @@
     <profile>
       <id>java8-or-lower</id>
       <activation>
-        <jdk>(,1.8]</jdk>
+        <activeByDefault>true</activeByDefault>
       </activation>
       <dependencies>
         <dependency>
@@ -41,10 +41,7 @@
       </dependencies>
     </profile>
     <profile>
-      <id>higher-than-java8</id>
-      <activation>
-        <jdk>(1.8,)</jdk>
-      </activation>
+      <id>java11</id>
       <dependencies>
         <dependency>
           <groupId>com.nablarch.framework</groupId>
@@ -83,9 +80,6 @@
           <scope>provided</scope>
         </dependency>
       </dependencies>
-    </profile>
-    <profile>
-      <id>java11</id>
       <build>
         <testResources>
           <testResource>
