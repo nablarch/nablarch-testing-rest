@@ -100,6 +100,18 @@ public class RestMockHttpRequest extends MockHttpRequest {
         return (RestMockHttpRequest) super.setHeaderMap(headers);
     }
 
+    /**
+     * HTTPリクエストヘッダの値を設定する。
+     *
+     * @param headerName リクエストヘッダ名
+     * @param value      リクエストヘッダに設定する値
+     * @return このオブジェクト自体
+     */
+    public RestMockHttpRequest setHeader(String headerName, String value) {
+        getHeaderMap().put(headerName, value);
+        return this;
+    }
+
     @Override
     public RestMockHttpRequest setRequestUri(String requestPath) {
         return (RestMockHttpRequest) super.setRequestUri(requestPath);
