@@ -184,12 +184,10 @@ public class RestMockHttpRequestTest {
         sut.setContentType("application/json");
         assertThat(sut.getHeader("Content-Type"), is("application/json"));
 
-        Map<String, String> headerMap = sut.getHeaderMap();
-        headerMap.put("test", "OK");
-        headerMap.put("Content-Length", "19");
         sut.setMethod("POST")
                 .setRequestUri("/test")
-                .setHeaderMap(headerMap)
+                .setHeader("test", "OK")
+                .setHeader("Content-Length", "19")
                 .setCookie(MockHttpCookie.valueOf("cookie=dummy"));
         assertThat(sut.toString(), is(POST_JSON_REQUEST));
     }
@@ -217,14 +215,12 @@ public class RestMockHttpRequestTest {
     public void testNormalPost3() {
         RestMockHttpRequest sut = new RestMockHttpRequest(
                 Collections.singletonList(new MockConverter()), "testType");
-        sut.setContentType("application/json");
-        sut.setBody("{\"field\" : \"value\"}");
-        Map<String, String> headerMap = sut.getHeaderMap();
-        headerMap.put("test", "OK");
-        headerMap.put("Content-Length", "19");
-        sut.setMethod("POST")
+        sut.setContentType("application/json")
+                .setBody("{\"field\" : \"value\"}")
+                .setMethod("POST")
                 .setRequestUri("/test")
-                .setHeaderMap(headerMap)
+                .setHeader("test", "OK")
+                .setHeader("Content-Length", "19")
                 .setCookie(MockHttpCookie.valueOf("cookie=dummy"));
         assertThat(sut.toString(), is(POST_JSON_REQUEST));
     }
