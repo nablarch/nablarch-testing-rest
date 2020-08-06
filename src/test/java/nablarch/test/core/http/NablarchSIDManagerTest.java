@@ -101,7 +101,7 @@ public class NablarchSIDManagerTest {
 
             String logText = new String(onMemoryOut.toByteArray(), Charset.forName("UTF-8"));
             assertThat(logText,
-                    containsString("Set-Cookie header value does not contain NABLARCH_SID. header value = cookie=abc\r\n"));
+                    containsString("Set-Cookie header value does not contain NABLARCH_SID. header value = cookie=abc"));
         } finally {
             System.setOut(originalStdOut);
         }
