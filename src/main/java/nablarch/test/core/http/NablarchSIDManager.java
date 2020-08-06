@@ -21,9 +21,7 @@ public class NablarchSIDManager implements RequestResponseProcessor {
         if (request instanceof RestMockHttpRequest) {
             RestMockHttpRequest restMockHttpRequest = (RestMockHttpRequest) request;
             if (nablarchSID != null) {
-                if (LOGGER.isDebugEnabled()) {
-                    LOGGER.logDebug("Set session ID: " + cookieName + " = " + nablarchSID);
-                }
+                logDebug("Set session ID: " + cookieName + " = " + nablarchSID);
                 restMockHttpRequest.setHeader("Cookie", cookieName + "=" + nablarchSID);
             }
         }
@@ -37,14 +35,10 @@ public class NablarchSIDManager implements RequestResponseProcessor {
             String value = header.split(";")[0];
             if (value.startsWith(cookieName + "=")) {
                 nablarchSID = value.substring((cookieName + "=").length());
-                if (LOGGER.isDebugEnabled()) {
-                    LOGGER.logDebug("Get session ID: " + cookieName + " = " + nablarchSID);
-                }
+                logDebug("Get session ID: " + cookieName + " = " + nablarchSID);
             } else {
-                if (LOGGER.isDebugEnabled()) {
-                    LOGGER.logDebug("Set-Cookie header value does not contain " + cookieName
-                            + ". header value = " + header);
-                }
+                logDebug("Set-Cookie header value does not contain " + cookieName
+                        + ". header value = " + header);
             }
         }
         return response;
@@ -57,5 +51,11 @@ public class NablarchSIDManager implements RequestResponseProcessor {
      */
     public void setCookieName(String cookieName) {
         this.cookieName = cookieName;
+    }
+
+    private void logDebug(String message) {
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.logDebug(message);
+        }
     }
 }
