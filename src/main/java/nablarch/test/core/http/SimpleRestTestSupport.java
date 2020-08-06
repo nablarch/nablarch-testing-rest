@@ -52,6 +52,19 @@ public class SimpleRestTestSupport extends TestEventDispatcher {
     /** 初期化済みか否か（static） */
     private static boolean initialized = false;
 
+    /** デフォルトのプロセッサ（リクエスト・レスポンスともに何もしない） **/
+    private RequestResponseProcessor defaultProcessor = new RequestResponseProcessor() {
+        @Override
+        public HttpRequest processRequest(HttpRequest request) {
+            return request;
+        }
+
+        @Override
+        public HttpResponse processResponse(HttpRequest request, HttpResponse response) {
+            return response;
+        }
+    };
+
     /** 実行中のテストクラスとメソッド名を保持する */
     @Rule
     public TestDescription testDescription = new TestDescription();
@@ -120,13 +133,33 @@ public class SimpleRestTestSupport extends TestEventDispatcher {
     }
 
     /**
+     * デフォルトの{@link RequestResponseProcessor}を設定する。
+     *
+     * @param defaultProcessor リクエスト・レスポンスに処理を行うプロセッサ
+     */
+    public void setDefaultProcessor(RequestResponseProcessor defaultProcessor) {
+        this.defaultProcessor = defaultProcessor;
+    }
+
+    /**
      * テストリクエストを内蔵サーバに渡しレスポンスを返す。
      *
      * @param request テストリクエスト
      * @return 内蔵サーバのレスポンス
      */
     public HttpResponse sendRequest(HttpRequest request) {
-        return sendRequestWithContext(request, new ExecutionContext());
+        return sendRequest(request, defaultProcessor);
+    }
+
+    /**
+     * テストリクエストを内蔵サーバに渡しレスポンスを返す。
+     *
+     * @param request   テストリクエスト
+     * @param processor リクエスト・レスポンスに追加処理を実行するプロセッサー
+     * @return 内蔵サーバのレスポンス
+     */
+    public HttpResponse sendRequest(HttpRequest request, RequestResponseProcessor processor) {
+        return sendRequestWithContext(request, new ExecutionContext(), processor);
     }
 
     /**
@@ -139,8 +172,25 @@ public class SimpleRestTestSupport extends TestEventDispatcher {
      * @see HttpRequestTestSupportHandler
      */
     public HttpResponse sendRequestWithContext(HttpRequest request, ExecutionContext context) {
+        return sendRequestWithContext(request, context, defaultProcessor);
+    }
+
+    /**
+     * {@link ExecutionContext}を設定しテストリクエストを内蔵サーバに渡しレスポンスを返す。
+     * {@link ExecutionContext}の設定は{@link HttpRequestTestSupportHandler}を利用する。
+     *
+     * @param request   テストリクエスト
+     * @param context   実行コンテキスト
+     * @param processor リクエスト・レスポンスに追加処理を実行するプロセッサー
+     * @return 内蔵サーバのレスポンス
+     * @see HttpRequestTestSupportHandler
+     */
+    public HttpResponse sendRequestWithContext(HttpRequest request, ExecutionContext context,
+                                               RequestResponseProcessor processor) {
+        request = processor.processRequest(request);
         handler.setContext(context);
-        return server.handle(request, context);
+        HttpResponse response = server.handle(request, context);
+        return processor.processResponse(request, response);
     }
 
     /**

@@ -1,6 +1,8 @@
 package nablarch.fw.web;
 
 import mockit.Expectations;
+import nablarch.fw.test.MockConverter;
+import nablarch.fw.test.NoContentConvertibleMockConverter;
 import org.hamcrest.CoreMatchers;
 import org.junit.Rule;
 import org.junit.Test;
@@ -306,38 +308,5 @@ public class RestMockHttpRequestTest {
                 .setHeaderMap(headerMap);
         String request = sut.toString();
         fail("ここには到達しない。" + request);
-    }
-
-    /**
-     * テスト用の{@link RestTestBodyConverter}実装。
-     * Content-Typeが何であってもボディをStringにキャストして返す。
-     */
-    private static class MockConverter implements RestTestBodyConverter {
-        @Override
-        public boolean isConvertible(Object body, MediaType mediaType) {
-            return true;
-        }
-
-        @Override
-        public String convert(Object body, MediaType mediaType) {
-            return (String) body;
-        }
-    }
-
-    /**
-     * テスト用の{@link RestTestBodyConverter}実装。
-     * {@link RestTestBodyConverter#isConvertible(Object, MediaType)}で常にfalseを返す。
-     */
-    private static class NoContentConvertibleMockConverter implements RestTestBodyConverter {
-
-        @Override
-        public boolean isConvertible(Object body, MediaType mediaType) {
-            return false;
-        }
-
-        @Override
-        public String convert(Object body, MediaType mediaType) {
-            return null;
-        }
     }
 }

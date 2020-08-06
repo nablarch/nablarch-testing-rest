@@ -6,6 +6,7 @@ import mockit.Mocked;
 import nablarch.core.exception.IllegalConfigurationException;
 import nablarch.core.repository.SystemRepository;
 import nablarch.core.util.StringUtil;
+import nablarch.fw.ExecutionContext;
 import nablarch.fw.web.HttpRequest;
 import nablarch.fw.web.HttpResponse;
 import nablarch.fw.web.RestMockHttpRequest;
@@ -28,6 +29,7 @@ import java.net.URL;
 import java.nio.charset.Charset;
 
 import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -56,6 +58,19 @@ public class SimpleRestTestSupportTest {
             assertTrue(response.getContentType().startsWith("text/plain"));
             assertThat(response.getCharset(), is(Charset.forName("UTF-8")));
             assertTrue(StringUtil.isNullOrEmpty(response.getBodyString()));
+        }
+
+        @Test
+        public void testNormalWithSIDManager() {
+            RestMockHttpRequest request = get("/test");
+            setDefaultProcessor(new NablarchSIDManager());
+            ExecutionContext context = new ExecutionContext();
+
+            sendRequestWithContext(request, context);
+            assertNull(request.getHeader("Cookie"));
+
+            sendRequestWithContext(request, context);
+            assertThat(request.getHeader("Cookie"), is("NABLARCH_SID=XXXXXX"));
         }
 
         /**

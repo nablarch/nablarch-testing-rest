@@ -12,6 +12,8 @@ import nablarch.fw.web.HttpResponse;
 public class NormalResponseHandler implements HttpRequestHandler {
     @Override
     public HttpResponse handle(HttpRequest httpRequest, ExecutionContext executionContext) {
-        return new HttpResponse(200);
+        HttpResponse response = new HttpResponse(200);
+        response.setHeader("Set-Cookie", "NABLARCH_SID=XXXXXX");
+        return response;
     }
 }
