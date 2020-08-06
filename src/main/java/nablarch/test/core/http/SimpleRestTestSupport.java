@@ -43,6 +43,8 @@ public class SimpleRestTestSupport extends TestEventDispatcher {
     private static final String HTTP_REQUEST_BUILDER_KEY = "restMockHttpRequestBuilder";
     /** HTTPサーバファクトリのリポジトリキー */
     private static final String HTTP_SERVER_FACTORY_KEY = "httpServerFactory";
+    /** デフォルトプロセッサのリポジトリキー */
+    private static final String DEFAULT_PROCESSOR_KEY = "defaultProcessor";
 
     /** 内蔵サーバ */
     private static HttpServer server;
@@ -53,18 +55,7 @@ public class SimpleRestTestSupport extends TestEventDispatcher {
     private static boolean initialized = false;
 
     /** デフォルトのプロセッサ（リクエスト・レスポンスともに何もしない） **/
-    private RequestResponseProcessor defaultProcessor = new RequestResponseProcessor() {
-        @Override
-        public HttpRequest processRequest(HttpRequest request) {
-            return request;
-        }
-
-        @Override
-        public HttpResponse processResponse(HttpRequest request, HttpResponse response) {
-            return response;
-        }
-    };
-
+    private RequestResponseProcessor defaultProcessor;
     /** 実行中のテストクラスとメソッド名を保持する */
     @Rule
     public TestDescription testDescription = new TestDescription();
@@ -74,9 +65,33 @@ public class SimpleRestTestSupport extends TestEventDispatcher {
      */
     @Before
     public void setUp() {
+        setDefaultProcessor();
         // HTTPテスト実行用設定情報の取得
         RestTestConfiguration config = SystemRepository.get(REST_TEST_CONFIGURATION_KEY);
         initializeIfNotYet(config);
+    }
+
+    /**
+     * デフォルト{@link RequestResponseProcessor}を設定する。
+     * SystemRepositoryに登録されていない場合は何もしない{@link RequestResponseProcessor}を設定する。
+     */
+    private void setDefaultProcessor() {
+        RequestResponseProcessor processor = SystemRepository.get(DEFAULT_PROCESSOR_KEY);
+        if (processor != null) {
+            this.defaultProcessor = processor;
+        } else {
+            this.defaultProcessor = new RequestResponseProcessor() {
+                @Override
+                public HttpRequest processRequest(HttpRequest request) {
+                    return request;
+                }
+
+                @Override
+                public HttpResponse processResponse(HttpRequest request, HttpResponse response) {
+                    return response;
+                }
+            };
+        }
     }
 
     /**
@@ -130,15 +145,6 @@ public class SimpleRestTestSupport extends TestEventDispatcher {
      */
     public RestMockHttpRequest delete(String uri) {
         return getHttpRequestBuilder().delete(uri);
-    }
-
-    /**
-     * デフォルトの{@link RequestResponseProcessor}を設定する。
-     *
-     * @param defaultProcessor リクエスト・レスポンスに処理を行うプロセッサ
-     */
-    public void setDefaultProcessor(RequestResponseProcessor defaultProcessor) {
-        this.defaultProcessor = defaultProcessor;
     }
 
     /**

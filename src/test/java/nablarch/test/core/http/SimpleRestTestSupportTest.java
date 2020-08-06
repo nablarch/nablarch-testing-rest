@@ -29,6 +29,7 @@ import java.net.URL;
 import java.nio.charset.Charset;
 
 import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
@@ -63,7 +64,6 @@ public class SimpleRestTestSupportTest {
         @Test
         public void testNormalWithSIDManager() {
             RestMockHttpRequest request = get("/test");
-            setDefaultProcessor(new NablarchSIDManager());
             ExecutionContext context = new ExecutionContext();
 
             sendRequestWithContext(request, context);
@@ -196,6 +196,26 @@ public class SimpleRestTestSupportTest {
             SimpleRestTestSupport sut = new SimpleRestTestSupport();
             setDummyDescription(SimpleRestTestSupportTest.class, sut);
             assertThat(sut.readTextResource("response.txt"), is("HTTP/1.1 200 OK"));
+        }
+
+        /**
+         * SystemRepositoryにdefaultProcessorが登録されていない場合、何もしないprocessorが設定されることを確認する。
+         */
+        @Test
+        public void testSetUp_DefaultProcessorNotRegistered() {
+            SimpleRestTestSupport sut = new SimpleRestTestSupport();
+            setDummyDescription(Object.class, sut);
+            RepositoryInitializer.recreateRepository("nablarch/test/core/http/no-default-processor.xml");
+            try {
+                sut.setUp();
+                RestMockHttpRequest request = sut.get("/test");
+                HttpResponse response = sut.sendRequest(request);
+                assertNotNull(response.getHeader("Set-Cookie"));
+                sut.sendRequest(request);
+                assertNull(request.getHeader("Cookie"));
+            } finally {
+                RepositoryInitializer.revertDefaultRepository();
+            }
         }
 
         /**
