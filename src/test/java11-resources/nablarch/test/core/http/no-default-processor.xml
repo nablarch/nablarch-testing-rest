@@ -49,12 +49,4 @@
     </property>
   </component>
 
-  <component name="defaultProcessor" class="nablarch.test.core.http.ComplexRequestResponseProcessor">
-    <property name="processors">
-      <list>
-        <component class="nablarch.test.core.http.NablarchSIDManager"/>
-      </list>
-    </property>
-  </component>
-
 </component-configuration>
