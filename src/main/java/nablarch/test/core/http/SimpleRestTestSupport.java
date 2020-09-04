@@ -54,8 +54,11 @@ public class SimpleRestTestSupport extends TestEventDispatcher {
     /** 初期化済みか否か（static） */
     private static boolean initialized = false;
 
-    /** デフォルトのプロセッサ（リクエスト・レスポンスともに何もしない） **/
-    private RequestResponseProcessor defaultProcessor = new RequestResponseProcessor() {
+    /** デフォルトのプロセッサ **/
+    private RequestResponseProcessor defaultProcessor;
+
+    /** リクエスト・レスポンスともに何もしないプロセッサ **/
+    private static final RequestResponseProcessor nopProcessor = new RequestResponseProcessor() {
         @Override
         public HttpRequest processRequest(HttpRequest request) {
             return request;
@@ -95,6 +98,8 @@ public class SimpleRestTestSupport extends TestEventDispatcher {
         if (processor != null) {
             processor.reset();
             this.defaultProcessor = processor;
+        } else {
+            this.defaultProcessor = nopProcessor;
         }
     }
 
