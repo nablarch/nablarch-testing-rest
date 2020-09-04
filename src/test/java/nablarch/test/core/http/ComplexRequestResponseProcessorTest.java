@@ -15,18 +15,16 @@ import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
 /**
- * {@link ComplexRequestResponseProcessorFactory.ComplexRequestResponseProcessor}のテスト
+ * {@link ComplexRequestResponseProcessor}のテスト
  */
 public class ComplexRequestResponseProcessorTest {
     @Test
     public void testSingleProcessor() {
-        NablarchSIDManagerFactory sidManagerFactory = new NablarchSIDManagerFactory();
-        List<RequestResponseProcessorFactory> processors = Collections.<RequestResponseProcessorFactory>singletonList(sidManagerFactory);
-        ComplexRequestResponseProcessorFactory complexRequestResponseProcessorFactory = new ComplexRequestResponseProcessorFactory();
-        complexRequestResponseProcessorFactory.setProcessorFactories(processors);
+        NablarchSIDManager sidManager = new NablarchSIDManager();
+        List<RequestResponseProcessor> processors = Collections.<RequestResponseProcessor>singletonList(sidManager);
 
-        ComplexRequestResponseProcessorFactory.ComplexRequestResponseProcessor sut =
-                (ComplexRequestResponseProcessorFactory.ComplexRequestResponseProcessor) complexRequestResponseProcessorFactory.create();
+        ComplexRequestResponseProcessor sut = new ComplexRequestResponseProcessor();
+        sut.setProcessors(processors);
 
         HttpRequest request = new RestMockHttpRequest(Collections.singletonList(new MockConverter())
                 , "testType");
@@ -40,15 +38,12 @@ public class ComplexRequestResponseProcessorTest {
 
     @Test
     public void testMultipleProcessors() {
-        NablarchSIDManagerFactory sidManagerFactory = new NablarchSIDManagerFactory();
-        TestProcessorFactory testProcessorFactory = new TestProcessorFactory();
-        List<RequestResponseProcessorFactory> processors = Arrays.asList(sidManagerFactory, testProcessorFactory);
+        NablarchSIDManager sidManager = new NablarchSIDManager();
+        TestProcessor testProcessor = new TestProcessor();
+        List<RequestResponseProcessor> processors = Arrays.asList(sidManager, testProcessor);
 
-        ComplexRequestResponseProcessorFactory complexRequestResponseProcessorFactory = new ComplexRequestResponseProcessorFactory();
-        complexRequestResponseProcessorFactory.setProcessorFactories(processors);
-        ComplexRequestResponseProcessorFactory.ComplexRequestResponseProcessor sut =
-                (ComplexRequestResponseProcessorFactory.ComplexRequestResponseProcessor) complexRequestResponseProcessorFactory.create();
-
+        ComplexRequestResponseProcessor sut = new ComplexRequestResponseProcessor();
+        sut.setProcessors(processors);
 
         HttpRequest request = new RestMockHttpRequest(Collections.singletonList(new MockConverter())
                 , "testType");
@@ -62,23 +57,16 @@ public class ComplexRequestResponseProcessorTest {
         assertThat(response.getStatusCode(), is(404));
     }
 
-    private static class TestProcessorFactory implements RequestResponseProcessorFactory {
+    private static class TestProcessor implements RequestResponseProcessor {
         @Override
-        public RequestResponseProcessor create() {
-            return new TestProcessor();
+        public HttpRequest processRequest(HttpRequest request) {
+            request.getHeaderMap().put("test", "processor");
+            return request;
         }
 
-        private static class TestProcessor implements RequestResponseProcessor {
-            @Override
-            public HttpRequest processRequest(HttpRequest request) {
-                request.getHeaderMap().put("test", "processor");
-                return request;
-            }
-
-            @Override
-            public HttpResponse processResponse(HttpRequest request, HttpResponse response) {
-                return response.setStatusCode(404);
-            }
+        @Override
+        public HttpResponse processResponse(HttpRequest request, HttpResponse response) {
+            return response.setStatusCode(404);
         }
     }
 }
