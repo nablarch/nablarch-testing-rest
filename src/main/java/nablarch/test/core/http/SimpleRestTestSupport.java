@@ -55,7 +55,22 @@ public class SimpleRestTestSupport extends TestEventDispatcher {
     private static boolean initialized = false;
 
     /** デフォルトのプロセッサ（リクエスト・レスポンスともに何もしない） **/
-    private RequestResponseProcessor defaultProcessor;
+    private RequestResponseProcessor defaultProcessor = new RequestResponseProcessor() {
+        @Override
+        public HttpRequest processRequest(HttpRequest request) {
+            return request;
+        }
+
+        @Override
+        public HttpResponse processResponse(HttpRequest request, HttpResponse response) {
+            return response;
+        }
+
+        @Override
+        public void reset() {
+            // NOP
+        }
+    };
     /** 実行中のテストクラスとメソッド名を保持する */
     @Rule
     public TestDescription testDescription = new TestDescription();
@@ -65,8 +80,7 @@ public class SimpleRestTestSupport extends TestEventDispatcher {
      */
     @Before
     public void setUp() {
-        setDefaultProcessor();
-        defaultProcessor.reset();
+        setupDefaultProcessor();
         // HTTPテスト実行用設定情報の取得
         RestTestConfiguration config = SystemRepository.get(REST_TEST_CONFIGURATION_KEY);
         initializeIfNotYet(config);
@@ -76,27 +90,11 @@ public class SimpleRestTestSupport extends TestEventDispatcher {
      * デフォルト{@link RequestResponseProcessor}を設定する。
      * SystemRepositoryに登録されていない場合は何もしない{@link RequestResponseProcessor}を設定する。
      */
-    private void setDefaultProcessor() {
+    private void setupDefaultProcessor() {
         RequestResponseProcessor processor = SystemRepository.get(DEFAULT_PROCESSOR_KEY);
         if (processor != null) {
+            processor.reset();
             this.defaultProcessor = processor;
-        } else {
-            this.defaultProcessor = new RequestResponseProcessor() {
-                @Override
-                public HttpRequest processRequest(HttpRequest request) {
-                    return request;
-                }
-
-                @Override
-                public HttpResponse processResponse(HttpRequest request, HttpResponse response) {
-                    return response;
-                }
-
-                @Override
-                public void reset() {
-                    // NOP
-                }
-            };
         }
     }
 
