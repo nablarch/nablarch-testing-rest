@@ -66,6 +66,7 @@ public class SimpleRestTestSupport extends TestEventDispatcher {
     @Before
     public void setUp() {
         setDefaultProcessor();
+        defaultProcessor.reset();
         // HTTPテスト実行用設定情報の取得
         RestTestConfiguration config = SystemRepository.get(REST_TEST_CONFIGURATION_KEY);
         initializeIfNotYet(config);

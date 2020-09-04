@@ -25,9 +25,14 @@ public interface RequestResponseProcessor {
     HttpResponse processResponse(HttpRequest request, HttpResponse response);
 
     /**
-     * 内部状態をリセットする
-     * テストケースをまたいで内部状態が引き継がれないために呼び出すメソッド。
-     * 内部状態を持たない場合や、複数テストケース間で状態を引き継いでも問題ない場合は何もしない。
+     * 内部状態をリセットする。
+     * <p>
+     * 複数のテストケースをまたいで内部状態が引き継がれないようにするため、SimpleTestSupportによって各テストケースの開始時にこのメソッドが呼び出される。
+     * ただし、RequestResponseProcessor実装クラスのインスタンスをテストコード内で明示的に生成した場合は自動的には呼び出されないので、必要に応じて呼び出すコードを書くこと。
+     * </p>
+     * <p>
+     * 内部状態を持たない場合や、複数のテストケースをまたいで内部状態を共有したい場合は、中身が空のメソッドを実装するだけで良い。
+     * </p>
      */
     void reset();
 }
