@@ -20,7 +20,7 @@ import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertThat;
 
 /**
- * {@link NablarchSIDManager}のテスト
+ * {@link NablarchSIDManagerFactory.NablarchSIDManager}のテスト
  */
 public class NablarchSIDManagerTest {
     @Test
@@ -35,7 +35,7 @@ public class NablarchSIDManagerTest {
             ByteArrayOutputStream onMemoryOut = new ByteArrayOutputStream();
             System.setOut(new PrintStream(onMemoryOut, true, "UTF-8"));
 
-            NablarchSIDManager sut = new NablarchSIDManager();
+            NablarchSIDManagerFactory.NablarchSIDManager sut = (NablarchSIDManagerFactory.NablarchSIDManager) new NablarchSIDManagerFactory().create();
             sut.processResponse(new MockHttpRequest(), response);
             sut.processRequest(request);
             assertThat(request.getHeader("Cookie"), is("NABLARCH_SID=nablarch_sid"));
@@ -56,7 +56,7 @@ public class NablarchSIDManagerTest {
             ByteArrayOutputStream onMemoryOut = new ByteArrayOutputStream();
             System.setOut(new PrintStream(onMemoryOut, true, "UTF-8"));
 
-            NablarchSIDManager sut = new NablarchSIDManager();
+            NablarchSIDManagerFactory.NablarchSIDManager sut = (NablarchSIDManagerFactory.NablarchSIDManager) new NablarchSIDManagerFactory().create();
             sut.processResponse(new MockHttpRequest(), new HttpResponse());
 
             String logText = new String(onMemoryOut.toByteArray(), Charset.forName("UTF-8"));
@@ -76,7 +76,7 @@ public class NablarchSIDManagerTest {
             ByteArrayOutputStream onMemoryOut = new ByteArrayOutputStream();
             System.setOut(new PrintStream(onMemoryOut, true, "UTF-8"));
 
-            NablarchSIDManager sut = new NablarchSIDManager();
+            NablarchSIDManagerFactory.NablarchSIDManager sut = (NablarchSIDManagerFactory.NablarchSIDManager) new NablarchSIDManagerFactory().create();
             sut.processResponse(new MockHttpRequest(), response);
 
             String logText = new String(onMemoryOut.toByteArray(), Charset.forName("UTF-8"));
@@ -96,7 +96,7 @@ public class NablarchSIDManagerTest {
             ByteArrayOutputStream onMemoryOut = new ByteArrayOutputStream();
             System.setOut(new PrintStream(onMemoryOut, true, "UTF-8"));
 
-            NablarchSIDManager sut = new NablarchSIDManager();
+            NablarchSIDManagerFactory.NablarchSIDManager sut = (NablarchSIDManagerFactory.NablarchSIDManager) new NablarchSIDManagerFactory().create();
             sut.processResponse(new MockHttpRequest(), response);
 
             String logText = new String(onMemoryOut.toByteArray(), Charset.forName("UTF-8"));
@@ -119,8 +119,9 @@ public class NablarchSIDManagerTest {
             ByteArrayOutputStream onMemoryOut = new ByteArrayOutputStream();
             System.setOut(new PrintStream(onMemoryOut, true, "UTF-8"));
 
-            NablarchSIDManager sut = new NablarchSIDManager();
-            sut.setCookieName("ANOTHER_SID");
+            NablarchSIDManagerFactory nablarchSIDManagerFactory = new NablarchSIDManagerFactory();
+            nablarchSIDManagerFactory.setCookieName("ANOTHER_SID");
+            NablarchSIDManagerFactory.NablarchSIDManager sut = (NablarchSIDManagerFactory.NablarchSIDManager) nablarchSIDManagerFactory.create();
             sut.processResponse(new MockHttpRequest(), response);
             sut.processRequest(request);
             assertThat(request.getHeader("Cookie"), is("ANOTHER_SID=nablarch_sid"));

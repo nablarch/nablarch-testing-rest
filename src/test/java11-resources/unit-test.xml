@@ -49,10 +49,11 @@
     </property>
   </component>
 
-  <component name="defaultProcessor" class="nablarch.test.core.http.ComplexRequestResponseProcessor">
-    <property name="processors">
+  <component name="processorFactory"
+             class="nablarch.test.core.http.ComplexRequestResponseProcessorFactory">
+    <property name="processorFactories">
       <list>
-        <component class="nablarch.test.core.http.NablarchSIDManager"/>
+        <component class="nablarch.test.core.http.NablarchSIDManagerFactory"/>
       </list>
     </property>
   </component>

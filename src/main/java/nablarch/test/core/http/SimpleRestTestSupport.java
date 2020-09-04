@@ -44,7 +44,7 @@ public class SimpleRestTestSupport extends TestEventDispatcher {
     /** HTTPサーバファクトリのリポジトリキー */
     private static final String HTTP_SERVER_FACTORY_KEY = "httpServerFactory";
     /** デフォルトプロセッサのリポジトリキー */
-    private static final String DEFAULT_PROCESSOR_KEY = "defaultProcessor";
+    private static final String PROCESSOR_FACTORY_KEY = "processorFactory";
 
     /** 内蔵サーバ */
     private static HttpServer server;
@@ -76,9 +76,9 @@ public class SimpleRestTestSupport extends TestEventDispatcher {
      * SystemRepositoryに登録されていない場合は何もしない{@link RequestResponseProcessor}を設定する。
      */
     private void setDefaultProcessor() {
-        RequestResponseProcessor processor = SystemRepository.get(DEFAULT_PROCESSOR_KEY);
-        if (processor != null) {
-            this.defaultProcessor = processor;
+        RequestResponseProcessorFactory processorFactory = SystemRepository.get(PROCESSOR_FACTORY_KEY);
+        if (processorFactory != null) {
+            this.defaultProcessor = processorFactory.create();
         } else {
             this.defaultProcessor = new RequestResponseProcessor() {
                 @Override
