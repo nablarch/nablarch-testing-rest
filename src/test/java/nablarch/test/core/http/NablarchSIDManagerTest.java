@@ -17,6 +17,7 @@ import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 
 /**
@@ -44,6 +45,33 @@ public class NablarchSIDManagerTest {
             assertThat(logText, allOf(
                     containsString("Get session ID: NABLARCH_SID = nablarch_sid"),
                     containsString("Set session ID: NABLARCH_SID = nablarch_sid")));
+        } finally {
+            System.setOut(originalStdOut);
+        }
+    }
+
+    @Test
+    public void testReset() throws UnsupportedEncodingException {
+        HttpRequest request = new RestMockHttpRequest(Collections.singletonList(new MockConverter())
+                , "testType");
+        HttpResponse response = new HttpResponse();
+        response.setHeader("Set-Cookie", "NABLARCH_SID=nablarch_sid");
+
+        PrintStream originalStdOut = System.out;
+        try {
+            ByteArrayOutputStream onMemoryOut = new ByteArrayOutputStream();
+            System.setOut(new PrintStream(onMemoryOut, true, "UTF-8"));
+
+            NablarchSIDManager sut = new NablarchSIDManager();
+            sut.processResponse(new MockHttpRequest(), response);
+            sut.reset();
+            sut.processRequest(request);
+            assertNull(request.getHeader("Cookie"));
+
+            String logText = new String(onMemoryOut.toByteArray(), Charset.forName("UTF-8"));
+            assertThat(logText, not(allOf(
+                    containsString("Get session ID: NABLARCH_SID = nablarch_sid"),
+                    containsString("Set session ID: NABLARCH_SID = nablarch_sid"))));
         } finally {
             System.setOut(originalStdOut);
         }

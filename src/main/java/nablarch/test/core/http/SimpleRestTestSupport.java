@@ -54,8 +54,26 @@ public class SimpleRestTestSupport extends TestEventDispatcher {
     /** 初期化済みか否か（static） */
     private static boolean initialized = false;
 
-    /** デフォルトのプロセッサ（リクエスト・レスポンスともに何もしない） **/
+    /** デフォルトのプロセッサ **/
     private RequestResponseProcessor defaultProcessor;
+
+    /** リクエスト・レスポンスともに何もしないプロセッサ **/
+    private static final RequestResponseProcessor NOP_PROCESSOR = new RequestResponseProcessor() {
+        @Override
+        public HttpRequest processRequest(HttpRequest request) {
+            return request;
+        }
+
+        @Override
+        public HttpResponse processResponse(HttpRequest request, HttpResponse response) {
+            return response;
+        }
+
+        @Override
+        public void reset() {
+            // NOP
+        }
+    };
     /** 実行中のテストクラスとメソッド名を保持する */
     @Rule
     public TestDescription testDescription = new TestDescription();
@@ -65,7 +83,7 @@ public class SimpleRestTestSupport extends TestEventDispatcher {
      */
     @Before
     public void setUp() {
-        setDefaultProcessor();
+        setupDefaultProcessor();
         // HTTPテスト実行用設定情報の取得
         RestTestConfiguration config = SystemRepository.get(REST_TEST_CONFIGURATION_KEY);
         initializeIfNotYet(config);
@@ -75,23 +93,14 @@ public class SimpleRestTestSupport extends TestEventDispatcher {
      * デフォルト{@link RequestResponseProcessor}を設定する。
      * SystemRepositoryに登録されていない場合は何もしない{@link RequestResponseProcessor}を設定する。
      */
-    private void setDefaultProcessor() {
+    private void setupDefaultProcessor() {
         RequestResponseProcessor processor = SystemRepository.get(DEFAULT_PROCESSOR_KEY);
         if (processor != null) {
             this.defaultProcessor = processor;
         } else {
-            this.defaultProcessor = new RequestResponseProcessor() {
-                @Override
-                public HttpRequest processRequest(HttpRequest request) {
-                    return request;
-                }
-
-                @Override
-                public HttpResponse processResponse(HttpRequest request, HttpResponse response) {
-                    return response;
-                }
-            };
+            this.defaultProcessor = NOP_PROCESSOR;
         }
+        defaultProcessor.reset();
     }
 
     /**
