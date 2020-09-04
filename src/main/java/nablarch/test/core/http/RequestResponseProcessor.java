@@ -23,4 +23,11 @@ public interface RequestResponseProcessor {
      * @return 追加処理を施したHTTPレスポンス
      */
     HttpResponse processResponse(HttpRequest request, HttpResponse response);
+
+    /**
+     * 内部状態をリセットする
+     * テストケースをまたいで内部状態が引き継がれないために呼び出すメソッド。
+     * 内部状態を持たない場合や、複数テストケース間で状態を引き継いでも問題ない場合は何もしない。
+     */
+    void reset();
 }

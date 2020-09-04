@@ -44,6 +44,11 @@ public class NablarchSIDManager implements RequestResponseProcessor {
         return response;
     }
 
+    @Override
+    public void reset() {
+        nablarchSID = null;
+    }
+
     /**
      * セッションIDを特定するCookieの名前を設定する。
      *

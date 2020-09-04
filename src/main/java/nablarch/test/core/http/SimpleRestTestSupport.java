@@ -90,6 +90,11 @@ public class SimpleRestTestSupport extends TestEventDispatcher {
                 public HttpResponse processResponse(HttpRequest request, HttpResponse response) {
                     return response;
                 }
+
+                @Override
+                public void reset() {
+                    // NOP
+                }
             };
         }
     }

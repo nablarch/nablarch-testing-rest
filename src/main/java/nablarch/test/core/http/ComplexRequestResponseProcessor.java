@@ -28,6 +28,13 @@ public class ComplexRequestResponseProcessor implements RequestResponseProcessor
         return response;
     }
 
+    @Override
+    public void reset() {
+        for (RequestResponseProcessor processor : processors) {
+            processor.reset();
+        }
+    }
+
     /**
      * 実行するプロセッサを設定する。
      *
