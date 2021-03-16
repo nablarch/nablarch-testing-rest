@@ -56,7 +56,7 @@ public class SimpleRestTestSupportTest {
             HttpResponse response = sendRequest(get("/test"));
             assertStatusCode("200 OK", HttpResponse.Status.OK, response);
             assertThat(response.getContentLength(), is("0"));
-            assertTrue(response.getContentType().startsWith("text/plain"));
+            assertNull(response.getContentType());
             assertThat(response.getCharset(), is(Charset.forName("UTF-8")));
             assertTrue(StringUtil.isNullOrEmpty(response.getBodyString()));
         }
