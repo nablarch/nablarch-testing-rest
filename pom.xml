@@ -6,7 +6,7 @@
 
   <groupId>com.nablarch.framework</groupId>
   <artifactId>nablarch-testing-rest</artifactId>
-  <version>1.0.0</version>
+  <version>1.0.1</version>
 
   <scm>
     <connection>scm:git:git://github.com/nablarch/${project.artifactId}.git</connection>
@@ -17,7 +17,7 @@
   <parent>
     <groupId>com.nablarch</groupId>
     <artifactId>nablarch-parent</artifactId>
-    <version>5u18</version>
+    <version>5u19</version>
   </parent>
 
   <profiles>
@@ -113,13 +113,13 @@
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
-      <version>4.12</version>
+      <version>4.13.1</version>
     </dependency>
 
     <dependency>
       <groupId>com.fasterxml.jackson.core</groupId>
       <artifactId>jackson-databind</artifactId>
-      <version>2.10.3</version>
+      <version>2.10.5.1</version>
     </dependency>
 
     <!--  テストでRESTサービスを動かすための設定  -->
