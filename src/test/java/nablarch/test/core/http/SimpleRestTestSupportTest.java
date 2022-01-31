@@ -141,6 +141,14 @@ public class SimpleRestTestSupportTest {
             RestMockHttpRequest deleteReq = delete("test");
             assertThat(deleteReq.getMethod(), is("DELETE"));
             assertThat(deleteReq.getRequestUri(), is("test"));
+
+            RestMockHttpRequest patchReq = patch("test");
+            assertThat(patchReq.getMethod(), is("PATCH"));
+            assertThat(patchReq.getRequestUri(), is("test"));
+
+            RestMockHttpRequest headReq = newRequest("HEAD", "test");
+            assertThat(headReq.getMethod(), is("HEAD"));
+            assertThat(headReq.getRequestUri(), is("test"));
         }
     }
 

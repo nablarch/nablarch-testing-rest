@@ -23,7 +23,7 @@ public class RestMockHttpRequestBuilder {
      * @param uri        URI
      * @return 生成された{@link RestMockHttpRequest}
      */
-    private RestMockHttpRequest newRequest(String httpMethod, String uri) {
+    public RestMockHttpRequest newRequest(String httpMethod, String uri) {
         return new RestMockHttpRequest(bodyConverters, defaultContentType).setMethod(httpMethod)
                 .setRequestUri(uri);
     }
@@ -66,6 +66,16 @@ public class RestMockHttpRequestBuilder {
      */
     public RestMockHttpRequest delete(String uri) {
         return newRequest("DELETE", uri);
+    }
+
+    /**
+     * PATCHのHTTPメソッドで{@link RestMockHttpRequest}を生成する。
+     *
+     * @param uri リクエストURI
+     * @return 生成された{@link RestMockHttpRequest}
+     */
+    public RestMockHttpRequest patch(String uri) {
+        return newRequest("PATCH", uri);
     }
 
     /**
