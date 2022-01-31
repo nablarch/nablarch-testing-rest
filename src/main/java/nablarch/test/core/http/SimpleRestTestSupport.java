@@ -117,6 +117,17 @@ public class SimpleRestTestSupport extends TestEventDispatcher {
     }
 
     /**
+     * 任意のHTTPメソッドで{@link RestMockHttpRequest}を生成する。
+     *
+     * @param httpMethod HTTPメソッド
+     * @param uri リクエストURI
+     * @return 生成された{@link RestMockHttpRequest}
+     */
+    public RestMockHttpRequest newRequest(String httpMethod, String uri) {
+        return getHttpRequestBuilder().newRequest(httpMethod, uri);
+    }
+
+    /**
      * GETのHTTPメソッドで{@link RestMockHttpRequest}を生成する。
      *
      * @param uri リクエストURI
@@ -154,6 +165,16 @@ public class SimpleRestTestSupport extends TestEventDispatcher {
      */
     public RestMockHttpRequest delete(String uri) {
         return getHttpRequestBuilder().delete(uri);
+    }
+
+    /**
+     * PATCHのHTTPメソッドで{@link RestMockHttpRequest}を生成する。
+     *
+     * @param uri リクエストURI
+     * @return 生成された{@link RestMockHttpRequest}
+     */
+    public RestMockHttpRequest patch(String uri) {
+        return getHttpRequestBuilder().patch(uri);
     }
 
     /**
