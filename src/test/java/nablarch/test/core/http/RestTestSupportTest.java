@@ -6,6 +6,7 @@ import mockit.Mocked;
 import nablarch.core.exception.IllegalConfigurationException;
 import nablarch.core.repository.SystemRepository;
 import nablarch.test.RepositoryInitializer;
+import nablarch.test.TestSupport;
 import nablarch.test.core.db.DbAccessTestSupport;
 import nablarch.test.core.rule.TestDescription;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
@@ -22,6 +23,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.annotation.Annotation;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.fail;
 
 /**
@@ -78,6 +81,36 @@ public class RestTestSupportTest {
     public static class RestTestSupportInstanceTest {
         @Rule
         public ExpectedException expectedException = ExpectedException.none();
+
+        /**
+         * テストクラスを指定するコンストラクタでインスタンスを生成した場合、
+         * DbAccessTestSupport にテストクラスが渡されて初期化されることを確認する。
+         */
+        @Test
+        public void testConstructorWithTestClass() {
+            RestTestSupport sut = new RestTestSupport(RestTestSupportInstanceTest.class);
+
+            DbAccessTestSupport dbSupport = Deencapsulation.getField(sut, "dbSupport");
+            TestSupport testSupport = Deencapsulation.getField(dbSupport, "testSupport");
+            Object testClass = Deencapsulation.getField(testSupport, "testClass");
+
+            assertThat(testClass, is((Object)RestTestSupportInstanceTest.class));
+        }
+
+        /**
+         * デフォルトコンストラクタでインスタンスを生成した場合、
+         * RestTestSupportのクラスオブジェクトが DbAccessTestSupport に渡されて初期化されることを確認する。
+         */
+        @Test
+        public void testDefaultConstructor() {
+            RestTestSupport sut = new RestTestSupport();
+
+            DbAccessTestSupport dbSupport = Deencapsulation.getField(sut, "dbSupport");
+            TestSupport testSupport = Deencapsulation.getField(dbSupport, "testSupport");
+            Object testClass = Deencapsulation.getField(testSupport, "testClass");
+
+            assertThat(testClass, is((Object)RestTestSupport.class));
+        }
 
         /**
          * 拡張子XLS形式のExcelファイルを読み込めることを確認する。
@@ -189,5 +222,4 @@ public class RestTestSupportTest {
             Deencapsulation.setField(sut, "testDescription", description);
         }
     }
-
 }

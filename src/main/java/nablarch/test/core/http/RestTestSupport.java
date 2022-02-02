@@ -41,7 +41,31 @@ public class RestTestSupport extends SimpleRestTestSupport {
     private static final String SETUP_TABLE_SHEET = "setUpDb";
 
     /** NTFのDBサポート */
-    private final DbAccessTestSupport dbSupport = new DbAccessTestSupport(getClass());
+    private final DbAccessTestSupport dbSupport;
+
+    /**
+     * デフォルトコンストラクタ。
+     * <p>
+     * このコンストラクタでインスタンスを生成し委譲形式で利用した場合、 {@link #setUpDb()} などの
+     * データベース機能を利用するメソッドは使用できない。<br>
+     * データベース機能を利用する場合は、 {@link #RestTestSupport(Class)} を使用すること。
+     * </p>
+     * <p>
+     * このクラスを継承してテストクラスを作成した場合は、デフォルトコンストラクタで初期化していても
+     * データベース機能を利用できる。
+     * </p>
+     */
+    public RestTestSupport() {
+        dbSupport = new DbAccessTestSupport(getClass());
+    }
+
+    /**
+     * テストクラスを指定してインスタンスを生成する。
+     * @param testClass テストクラス
+     */
+    public RestTestSupport(Class<?> testClass) {
+        dbSupport = new DbAccessTestSupport(testClass);
+    }
 
     /**
      * システムリポジトリから設定を取得しHTTPサーバを起動する。
