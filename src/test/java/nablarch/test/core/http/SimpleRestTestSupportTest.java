@@ -118,6 +118,34 @@ public class SimpleRestTestSupportTest {
         }
 
         /**
+         * テストクラスを指定するreadTextResourcesで、
+         * テキストファイルを読み込む際に{@link URISyntaxException}が送出された場合、例外が送出されることを確認する。
+         *
+         * @param url モック化されたURL
+         */
+        @Test
+        public void testReadTextResourceWithTestClass_CatchURISyntaxException(@Mocked final URL url) throws URISyntaxException {
+            expectedException.expect(IllegalArgumentException.class);
+            expectedException.expectMessage("couldn't read resource [response.txt]. cause [url is invalid: dummy].");
+            new Expectations() {{
+                url.toURI();
+                result = new URISyntaxException("dummy", "url is invalid");
+            }};
+            readTextResource(SimpleRestTestSupportTest.class, "response.txt");
+        }
+
+        /**
+         * テストクラスを指定するreadTextResourcesで、
+         * 存在しないテキストファイルを読み込もうとした場合、例外が送出されることを確認する。
+         */
+        @Test
+        public void testReadTextResourceWithTestClass_NotExistsText() {
+            expectedException.expect(IllegalArgumentException.class);
+            expectedException.expectMessage("couldn't find resource [SimpleRestTestSupportSubClassTest/noFile].");
+            readTextResource(SimpleRestTestSupportSubClassTest.class, "noFile");
+        }
+
+        /**
          * {@link RestMockHttpRequestBuilder#get(String)}
          * {@link RestMockHttpRequestBuilder#post(String)}
          * {@link RestMockHttpRequestBuilder#put(String)}
@@ -204,6 +232,33 @@ public class SimpleRestTestSupportTest {
             SimpleRestTestSupport sut = new SimpleRestTestSupport();
             setDummyDescription(SimpleRestTestSupportTest.class, sut);
             assertThat(sut.readTextResource("response.txt"), is("HTTP/1.1 200 OK"));
+        }
+
+        /**
+         * テストクラスを指定するreadTextResourceで、
+         * テキストファイル読込中に{@link IOException}が送出された場合、{@link IllegalArgumentException}が送出されることを確認する。
+         */
+        @Test
+        public void testReadTextResourceWithTestClass_thrownIOException() {
+            expectedException.expect(IllegalArgumentException.class);
+            expectedException.expectMessage("couldn't read resource [response.txt]. cause [I/O error].");
+            SimpleRestTestSupport sut = new SimpleRestTestSupport() {
+                @Override
+                protected String read(File file) throws IOException {
+                    throw new IOException("I/O error");
+                }
+            };
+            sut.readTextResource(SimpleRestTestSupportTest.class, "response.txt");
+            fail("ここに到達したらExceptionが発生していない");
+        }
+
+        /**
+         * テストクラスを指定するreadTextResourceで、テキストファイルを読み込めることを確認する。
+         */
+        @Test
+        public void testReadTextResourceWithTestClass() {
+            SimpleRestTestSupport sut = new SimpleRestTestSupport();
+            assertThat(sut.readTextResource(SimpleRestTestSupportTest.class, "response.txt"), is("HTTP/1.1 200 OK"));
         }
 
         /**
