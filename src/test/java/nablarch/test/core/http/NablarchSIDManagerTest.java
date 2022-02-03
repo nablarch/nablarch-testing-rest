@@ -161,4 +161,12 @@ public class NablarchSIDManagerTest {
             System.setOut(originalStdOut);
         }
     }
+
+    @Test
+    public void testNotRestMockHttpRequest() {
+        MockHttpRequest mockHttpRequest = new MockHttpRequest();
+        NablarchSIDManager sut = new NablarchSIDManager();
+        HttpRequest processedRequest = sut.processRequest(mockHttpRequest);
+        assertNull(processedRequest.getHeader("Cookie"));
+    }
 }
