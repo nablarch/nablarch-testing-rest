@@ -331,8 +331,18 @@ public class SimpleRestTestSupport extends TestEventDispatcher {
      * @return ファイル内容の文字列
      */
     protected String readTextResource(String fileName) {
+        return readTextResource(testDescription.getTestClass(), fileName);
+    }
+
+    /**
+     * 指定したテストクラスと同じパッケージにあるファイルを読み込み文字列を返す。
+     * @param testClass テストクラス
+     * @param fileName 読み込むファイル名
+     * @return ファイル内容の文字列
+     */
+    public String readTextResource(Class<?> testClass, String fileName) {
         try {
-            URL url = getUrl(testDescription.getTestClassSimpleName() + "/" + fileName);
+            URL url = getUrl(testClass, testClass.getSimpleName() + "/" + fileName);
             File file = new File(url.toURI());
             return read(file);
         } catch (URISyntaxException e) {
@@ -347,11 +357,12 @@ public class SimpleRestTestSupport extends TestEventDispatcher {
     /**
      * ファイルのURLを取得する。
      *
+     * @param testClass テストクラス
      * @param fileName 対象のファイル名
      * @return ファイルのURL
      */
-    private URL getUrl(String fileName) {
-        URL url = testDescription.getTestClass().getResource(fileName);
+    private URL getUrl(Class<?> testClass, String fileName) {
+        URL url = testClass.getResource(fileName);
         if (url == null) {
             throw new IllegalArgumentException("couldn't find resource [" + fileName + "].");
         }
