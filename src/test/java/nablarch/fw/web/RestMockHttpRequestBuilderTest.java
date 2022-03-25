@@ -86,5 +86,13 @@ public class RestMockHttpRequestBuilderTest {
         RestMockHttpRequest deleteReq = sut.delete("test");
         assertThat(deleteReq.getMethod(), is("DELETE"));
         assertThat(deleteReq.getRequestUri(), is("test"));
+
+        RestMockHttpRequest patchReq = sut.patch("test");
+        assertThat(patchReq.getMethod(), is("PATCH"));
+        assertThat(patchReq.getRequestUri(), is("test"));
+
+        RestMockHttpRequest headReq = sut.newRequest("HEAD", "test");
+        assertThat(headReq.getMethod(), is("HEAD"));
+        assertThat(headReq.getRequestUri(), is("test"));
     }
 }
