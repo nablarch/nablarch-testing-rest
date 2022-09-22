@@ -346,24 +346,30 @@ public class RestTestSupport extends SimpleRestTestSupport {
     }
 
     /**
-     * HTTPレスポンスボディの内容を表す文字列を返す。
+     * HTTPレスポンスボディの内容を表す文字列を返す。<br/>
+     * 文字列は{@link HttpResponse#getCharset()}で取得したキャラセットでデコードして取得される。
      *
      * @return ボディの内容を表す文字列を返す
      */
     public String getBodyString(HttpResponse httpResponse)  {
+        InputStream inputStream = null;
+        ByteArrayOutputStream byteArrayOutputStream = null;
         try {
-            InputStream inputStream = getBodyStream(httpResponse);
-            ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-            byte[] byteSize = new byte[1024];
+            inputStream = getBodyStream(httpResponse);
+            byteArrayOutputStream = new ByteArrayOutputStream();
+            byte[] buffer = new byte[1024];
             Charset charset = httpResponse.getCharset();
             
             int length;
-            while ((length = inputStream.read(byteSize)) != -1) {
-                byteArrayOutputStream.write(byteSize, 0, length);
+            while ((length = inputStream.read(buffer)) != -1) {
+                byteArrayOutputStream.write(buffer, 0, length);
             }
             return byteArrayOutputStream.toString(charset.name());
         } catch (Exception e) {
             throw new RuntimeException("response io failed.", e);
+        } finally {
+            FileUtil.closeQuietly(byteArrayOutputStream);
+            FileUtil.closeQuietly(inputStream);
         }
     }
 
