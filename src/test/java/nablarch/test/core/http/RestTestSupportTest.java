@@ -22,6 +22,7 @@ import org.junit.runner.RunWith;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.Charset;
 import java.lang.annotation.Annotation;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -74,52 +75,6 @@ public class RestTestSupportTest {
             assertTableEquals("sheet", "id");
             assertTableEquals("message", "sheet", "id");
             assertTableEquals("message", "sheet", "id", true);
-        }
-
-        /**
-         * レスポンス内容の文字列比較。
-         */
-        @Test
-        public void testWritingToBodyBuffer() {
-            
-            HttpResponse res = new HttpResponse();
-            assertThat("0", is(res.getContentLength()));
-            
-            res.write("Hello world!\n");
-
-            // レスポンスボディ確認
-            assertThat("Hello world!\n", is(getBodyString(res)));
-
-            // toString確認
-            String toStr = res.toString();
-            assertThat(toStr, containsString("HTTP/1.1 200 OK"));
-            assertThat(toStr, containsString("Content-Length: 13"));
-            assertThat(toStr, containsString("Content-Type: text/plain;charset=UTF-8"));
-            assertThat(toStr, containsString("Hello world!"));
-        }
-
-        /**
-         * ストリームにbyte配列を書き出し、toStringで内容を確認する。
-         */
-        @Test
-        public void testWritingToBodyOutputStream() throws Exception {
-            HttpResponse res = new HttpResponse();
-            String expectedString = "Hello world!\n" + "Hello world2!\n" + "Hello world3!\n";
-            byte[] expectedBytes = expectedString.getBytes();
-
-            res.write(expectedBytes);
-
-            byte[] bytes = new byte[expectedBytes.length];
-            InputStream input = getBodyStream(res);
-            input.read(bytes);
-
-            assertThat(expectedBytes.length, is(bytes.length));
-
-            for(int i = 0; i < expectedBytes.length; i++){
-                if(expectedBytes[i] != bytes[i]) fail();
-            }
-
-            assertThat(res.toString().contains(expectedString), is(true));
         }
     }
 
@@ -268,6 +223,46 @@ public class RestTestSupportTest {
                 }
             };
             Deencapsulation.setField(sut, "testDescription", description);
+        }
+
+        /**
+         * レスポンス内容の文字列比較。
+         */
+        @Test
+        public void testWritingToBodyBuffer() {
+            HttpResponse res = new HttpResponse();
+            assertThat("0", is(res.getContentLength()));
+            
+            res.write("Hello world!\n");
+
+            RestTestSupport sut = new RestTestSupport();
+            // レスポンスボディ確認
+            assertThat("Hello world!\n", is(sut.getBodyString(res)));
+        }
+
+        /**
+         * ストリームにbyte配列を書き出し、toStringで内容を確認する。
+         */
+        @Test
+        public void testWritingToBodyOutputStream() throws Exception {
+            HttpResponse res = new HttpResponse();
+            String expectedString = "Hello world!\n" + "Hello world2!\n" + "Hello world3!\n";
+            byte[] expectedBytes = expectedString.getBytes(Charset.forName("UTF-8"));
+
+            res.write(expectedBytes);
+
+            byte[] actualBytes = new byte[expectedBytes.length];
+            RestTestSupport sut = new RestTestSupport();
+            InputStream input = sut.getBodyStream(res);
+            input.read(actualBytes);
+
+            assertThat(expectedBytes.length, is(actualBytes.length));
+
+            for(int i = 0; i < expectedBytes.length; i++){
+                if(expectedBytes[i] != actualBytes[i]) fail();
+            }
+
+            assertThat(actualBytes, is(expectedBytes));
         }
     }
 }
