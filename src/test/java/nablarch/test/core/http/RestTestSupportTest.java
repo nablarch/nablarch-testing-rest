@@ -258,11 +258,6 @@ public class RestTestSupportTest {
             input.read(actualBytes);
 
             assertThat(expectedBytes.length, is(actualBytes.length));
-
-            for(int i = 0; i < expectedBytes.length; i++){
-                if(expectedBytes[i] != actualBytes[i]) fail();
-            }
-
             assertThat(actualBytes, is(expectedBytes));
         }
     }
