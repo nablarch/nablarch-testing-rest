@@ -358,12 +358,12 @@ public class RestTestSupport extends SimpleRestTestSupport {
             inputStream = getBodyStream(httpResponse);
             byteArrayOutputStream = new ByteArrayOutputStream();
             byte[] buffer = new byte[1024];
-            Charset charset = httpResponse.getCharset();
             
             int length;
             while ((length = inputStream.read(buffer)) != -1) {
                 byteArrayOutputStream.write(buffer, 0, length);
             }
+            Charset charset = httpResponse.getCharset();
             return byteArrayOutputStream.toString(charset.name());
         } catch (Exception e) {
             throw new RuntimeException("response io failed.", e);
