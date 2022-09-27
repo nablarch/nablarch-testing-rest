@@ -231,13 +231,14 @@ public class RestTestSupportTest {
         @Test
         public void testWritingToBodyBuffer() {
             HttpResponse res = new HttpResponse();
+            res.setContentType("text/plain ; charset= \"utf-8\" ");
             assertThat("0", is(res.getContentLength()));
             
-            res.write("Hello world!\n");
+            res.write("Hello world!\nボディテスト\n");
 
             RestTestSupport sut = new RestTestSupport();
             // レスポンスボディ確認
-            assertThat("Hello world!\n", is(sut.getBodyString(res)));
+            assertThat("Hello world!\nボディテスト\n", is(sut.getBodyString(res)));
         }
 
         /**
@@ -246,7 +247,7 @@ public class RestTestSupportTest {
         @Test
         public void testWritingToBodyOutputStream() throws Exception {
             HttpResponse res = new HttpResponse();
-            String expectedString = "Hello world!\n" + "Hello world2!\n" + "Hello world3!\n";
+            String expectedString = "Hello world!\n" + "Hello world2!\n" + "Hello world3!\nボディテスト\n";
             byte[] expectedBytes = expectedString.getBytes(Charset.forName("UTF-8"));
 
             res.write(expectedBytes);
