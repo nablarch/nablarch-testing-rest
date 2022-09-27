@@ -257,7 +257,6 @@ public class RestTestSupportTest {
             InputStream input = sut.getBodyStream(res);
             input.read(actualBytes);
 
-            assertThat(expectedBytes.length, is(actualBytes.length));
             assertThat(actualBytes, is(expectedBytes));
         }
     }
