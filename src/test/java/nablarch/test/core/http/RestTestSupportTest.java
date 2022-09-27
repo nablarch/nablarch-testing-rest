@@ -5,6 +5,7 @@ import mockit.Expectations;
 import mockit.Mocked;
 import nablarch.core.exception.IllegalConfigurationException;
 import nablarch.core.repository.SystemRepository;
+import nablarch.fw.web.HttpResponse;
 import nablarch.test.RepositoryInitializer;
 import nablarch.test.TestSupport;
 import nablarch.test.core.db.DbAccessTestSupport;
@@ -21,10 +22,12 @@ import org.junit.runner.RunWith;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.Charset;
 import java.lang.annotation.Annotation;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.containsString;
 import static org.junit.Assert.fail;
 
 /**
@@ -220,6 +223,41 @@ public class RestTestSupportTest {
                 }
             };
             Deencapsulation.setField(sut, "testDescription", description);
+        }
+
+        /**
+         * レスポンス内容の文字列比較。
+         */
+        @Test
+        public void testWritingToBodyBuffer() {
+            HttpResponse res = new HttpResponse();
+            res.setContentType("text/plain ; charset= \"utf-8\" ");
+            assertThat("0", is(res.getContentLength()));
+            
+            res.write("Hello world!\nボディテスト\n");
+
+            RestTestSupport sut = new RestTestSupport();
+            // レスポンスボディ確認
+            assertThat("Hello world!\nボディテスト\n", is(sut.getBodyString(res)));
+        }
+
+        /**
+         * ストリームにbyte配列を書き出し、toStringで内容を確認する。
+         */
+        @Test
+        public void testWritingToBodyOutputStream() throws Exception {
+            HttpResponse res = new HttpResponse();
+            String expectedString = "Hello world!\n" + "Hello world2!\n" + "Hello world3!\nボディテスト\n";
+            byte[] expectedBytes = expectedString.getBytes(Charset.forName("UTF-8"));
+
+            res.write(expectedBytes);
+
+            byte[] actualBytes = new byte[expectedBytes.length];
+            RestTestSupport sut = new RestTestSupport();
+            InputStream input = sut.getBodyStream(res);
+            input.read(actualBytes);
+
+            assertThat(actualBytes, is(expectedBytes));
         }
     }
 }
