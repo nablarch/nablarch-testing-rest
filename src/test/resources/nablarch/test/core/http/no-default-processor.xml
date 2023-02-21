@@ -30,8 +30,9 @@
     <property name="transactionFactory" ref="jdbcTransactionFactory"/>
   </component>
 
-  <!-- テスト用HttpServerにJetty6を定義する -->
-  <component name="httpServerFactory" class="nablarch.fw.web.httpserver.HttpServerFactoryJetty6"/>
+  <!-- jettyの設定読み込み -->
+  <import file="jetty-config.xml"/>
+
   <component name="restTestConfiguration"
              class="nablarch.test.core.http.RestTestConfiguration">
     <property name="webBaseDir" value="src/test/web"/>
