@@ -6,6 +6,7 @@ import nablarch.core.log.LoggerManager;
 import nablarch.core.repository.SystemRepository;
 import nablarch.core.util.FileUtil;
 import nablarch.core.util.annotation.Published;
+import nablarch.fw.web.HttpResponse;
 import nablarch.test.core.db.DbAccessTestSupport;
 import nablarch.test.core.reader.TestDataParser;
 import org.apache.poi.ss.usermodel.Sheet;
@@ -15,6 +16,8 @@ import org.junit.Before;
 
 import java.io.File;
 import java.io.InputStream;
+import java.io.ByteArrayOutputStream;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -340,5 +343,42 @@ public class RestTestSupport extends SimpleRestTestSupport {
             throw new IllegalConfigurationException(createNoComponentMessage(TEST_DATA_PARSER_KEY));
         }
         return parser;
+    }
+
+    /**
+     * HTTPレスポンスボディの内容を表す文字列を返す。<br/>
+     * 文字列は{@link HttpResponse#getCharset()}で取得したキャラセットでデコードして取得される。
+     *
+     * @return ボディの内容を表す文字列を返す
+     */
+    public String getBodyString(HttpResponse httpResponse)  {
+        InputStream inputStream = null;
+        ByteArrayOutputStream byteArrayOutputStream = null;
+        try {
+            inputStream = getBodyStream(httpResponse);
+            byteArrayOutputStream = new ByteArrayOutputStream();
+            byte[] buffer = new byte[1024];
+            
+            int length;
+            while ((length = inputStream.read(buffer)) != -1) {
+                byteArrayOutputStream.write(buffer, 0, length);
+            }
+            Charset charset = httpResponse.getCharset();
+            return byteArrayOutputStream.toString(charset.name());
+        } catch (Exception e) {
+            throw new RuntimeException("response io failed.", e);
+        } finally {
+            FileUtil.closeQuietly(byteArrayOutputStream);
+            FileUtil.closeQuietly(inputStream);
+        }
+    }
+
+    /**
+     * HTTPレスポンスボディの内容を保持するストリームを取得する。
+     *
+     * @return HTTPレスポンスボディの内容を保持するストリーム
+     */
+    public InputStream getBodyStream(HttpResponse httpResponse) {
+        return httpResponse.getBodyStream();
     }
 }
