@@ -346,6 +346,10 @@ public class SimpleRestTestSupport extends TestEventDispatcher {
             File file = new File(url.toURI());
             return read(file);
         } catch (URISyntaxException e) {
+            // toURL でこの例外がスローされるのは URL が不正な場合に限られる。
+            // 一方で、 URL は Class.getResource() によって取得したものであり、
+            // リソースが存在している場合は不正な URL になりえない。
+            // よって、この例外がスローされることはない。
             throw new IllegalArgumentException("couldn't read resource [" + fileName + "]. "
                     + "cause [" + e.getMessage() + "].", e);
         } catch (IOException e) {
