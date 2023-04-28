@@ -4,17 +4,18 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.json.JsonWriteFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
-import mockit.Expectations;
-import mockit.Mocked;
 import nablarch.fw.web.RestTestBodyConverter.MediaType;
 import org.hamcrest.Matchers;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
+import org.mockito.Mockito;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
 
 /**
  * {@link JacksonBodyConverter}のテストクラス。
@@ -85,17 +86,18 @@ public class JacksonBodyConverterTest {
      * {@link IllegalArgumentException}が送出されることを確認する。
      */
     @Test
-    public void writeValueAsStringThrowsJsonProcessingException(@Mocked final ObjectMapper objectMapper)
-            throws JsonProcessingException {
+    public void writeValueAsStringThrowsJsonProcessingException() throws JsonProcessingException {
         expectedException.expect(IllegalArgumentException.class);
         expectedException.expectMessage("body cannot convert to String. cause[write failed.].");
         expectedException.expectCause(Matchers.<Throwable>instanceOf(DummyJsonException.class));
         TestDto dto = new TestDto("test body", "value");
         MediaType mediaTypeJson = new MediaType("application/json");
-        new Expectations() {{
-            objectMapper.writeValueAsString(any);
-            result = new DummyJsonException("write failed.");
-        }};
+
+        final ObjectMapper objectMapper = Mockito.mock(ObjectMapper.class);
+        when(objectMapper.writeValueAsString(any())).thenThrow(new DummyJsonException("write failed."));
+
+        JacksonBodyConverter sut = new JacksonBodyConverter(() -> objectMapper);
+        
         sut.convert(dto, mediaTypeJson);
     }
 

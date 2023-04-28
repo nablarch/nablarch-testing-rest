@@ -1,8 +1,5 @@
 package nablarch.test.core.http;
 
-import mockit.Deencapsulation;
-import mockit.Expectations;
-import mockit.Mocked;
 import nablarch.core.exception.IllegalConfigurationException;
 import nablarch.core.repository.SystemRepository;
 import nablarch.fw.web.HttpResponse;
@@ -10,6 +7,7 @@ import nablarch.test.RepositoryInitializer;
 import nablarch.test.TestSupport;
 import nablarch.test.core.db.DbAccessTestSupport;
 import nablarch.test.core.rule.TestDescription;
+import nablarch.test.support.reflection.ReflectionUtil;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.ss.usermodel.WorkbookFactory;
 import org.junit.After;
@@ -19,16 +17,22 @@ import org.junit.experimental.runners.Enclosed;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.Description;
 import org.junit.runner.RunWith;
+import org.mockito.MockedStatic;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.charset.Charset;
 import java.lang.annotation.Annotation;
+import java.nio.charset.Charset;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.containsString;
 import static org.junit.Assert.fail;
+import static org.mockito.Answers.RETURNS_DEFAULTS;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.withSettings;
 
 /**
  * {@link RestTestSupport}のテストクラス。
@@ -39,33 +43,22 @@ public class RestTestSupportTest {
      * {@link RestTestSupport}を継承したクラスのテスト。
      */
     public static class RestTestSupportSubClassTest extends RestTestSupport {
+        
         /**
          * {@link DbAccessTestSupport}への委譲メソッドを確認する。
-         *
-         * @param dbSupport モック化されたDBテストサポート
          */
         @Test
-        public void testDelegateMethod(@Mocked final DbAccessTestSupport dbSupport) {
-            new Expectations() {{
-                dbSupport.setUpDb("sheet");
-                times = 1;
-                dbSupport.setUpDb("sheet", "group");
-                times = 1;
-                dbSupport.getListMap("sheet", "id");
-                times = 1;
-                dbSupport.getListParamMap("sheet", "id");
-                times = 1;
-                dbSupport.getParamMap("sheet", "id");
-                times = 1;
-                dbSupport.assertTableEquals("sheet");
-                times = 1;
-                dbSupport.assertTableEquals("sheet", "id");
-                times = 1;
-                dbSupport.assertTableEquals("message", "sheet", "id");
-                times = 1;
-                dbSupport.assertTableEquals("message", "sheet", "id", true);
-                times = 1;
-            }};
+        public void testDelegateMethod() {
+            // dbSupport は親クラス(RestTestSupport)のインスタンス初期化時に設定されるため、
+            // サブクラスで mockConstruction を使っても間に合わない。
+            // このため、インスタンスを取り出して spy に置き換えている。
+            // なお、通常の spy だと Excel に実際にアクセスしようとしてエラーになるので、
+            // 動きをモック化させるため defaultAnswer(RETURNS_DEFAULTS) を設定している。
+            final DbAccessTestSupport original = ReflectionUtil.getFieldValue(this, "dbSupport");
+            final DbAccessTestSupport spiedDbSupport = mock(DbAccessTestSupport.class,
+                    withSettings().spiedInstance(original).defaultAnswer(RETURNS_DEFAULTS));
+            ReflectionUtil.setFieldValue(this, "dbSupport", spiedDbSupport);
+
             setUpDb("sheet");
             setUpDb("sheet", "group");
             getListMap("sheet", "id");
@@ -75,6 +68,16 @@ public class RestTestSupportTest {
             assertTableEquals("sheet", "id");
             assertTableEquals("message", "sheet", "id");
             assertTableEquals("message", "sheet", "id", true);
+
+            verify(spiedDbSupport).setUpDb("sheet");
+            verify(spiedDbSupport).setUpDb("sheet", "group");
+            verify(spiedDbSupport).getListMap("sheet", "id");
+            verify(spiedDbSupport).getListParamMap("sheet", "id");
+            verify(spiedDbSupport).getParamMap("sheet", "id");
+            verify(spiedDbSupport).assertTableEquals("sheet");
+            verify(spiedDbSupport).assertTableEquals("sheet", "id");
+            verify(spiedDbSupport).assertTableEquals("message", "sheet", "id");
+            verify(spiedDbSupport).assertTableEquals("message", "sheet", "id", true);
         }
     }
 
@@ -93,9 +96,9 @@ public class RestTestSupportTest {
         public void testConstructorWithTestClass() {
             RestTestSupport sut = new RestTestSupport(RestTestSupportInstanceTest.class);
 
-            DbAccessTestSupport dbSupport = Deencapsulation.getField(sut, "dbSupport");
-            TestSupport testSupport = Deencapsulation.getField(dbSupport, "testSupport");
-            Object testClass = Deencapsulation.getField(testSupport, "testClass");
+            DbAccessTestSupport dbSupport = ReflectionUtil.getFieldValue(sut, "dbSupport");
+            TestSupport testSupport = ReflectionUtil.getFieldValue(dbSupport, "testSupport");
+            Object testClass = ReflectionUtil.getFieldValue(testSupport, "testClass");
 
             assertThat(testClass, is((Object)RestTestSupportInstanceTest.class));
         }
@@ -108,9 +111,9 @@ public class RestTestSupportTest {
         public void testDefaultConstructor() {
             RestTestSupport sut = new RestTestSupport();
 
-            DbAccessTestSupport dbSupport = Deencapsulation.getField(sut, "dbSupport");
-            TestSupport testSupport = Deencapsulation.getField(dbSupport, "testSupport");
-            Object testClass = Deencapsulation.getField(testSupport, "testClass");
+            DbAccessTestSupport dbSupport = ReflectionUtil.getFieldValue(sut, "dbSupport");
+            TestSupport testSupport = ReflectionUtil.getFieldValue(dbSupport, "testSupport");
+            Object testClass = ReflectionUtil.getFieldValue(testSupport, "testClass");
 
             assertThat(testClass, is((Object)RestTestSupport.class));
         }
@@ -167,38 +170,34 @@ public class RestTestSupportTest {
 
         /**
          * {@link WorkbookFactory}が例外を送出した場合、{@link RuntimeException}が送出されることを確認する。
-         *
-         * @param factory モック化された{@link WorkbookFactory}
          */
         @Test
-        public void testSetUp_WorkbookFactoryThrowsException(@Mocked final WorkbookFactory factory) throws IOException, InvalidFormatException {
+        public void testSetUp_WorkbookFactoryThrowsException() throws IOException, InvalidFormatException {
             expectedException.expect(RuntimeException.class);
             expectedException.expectMessage("test data file open failed.");
-            new Expectations() {{
-                WorkbookFactory.create((InputStream) any);
-                result = new Exception("cannot create.");
-            }};
             RestTestSupport sut = new RestTestSupport();
             setDummyDescription(RestTestSupport.class, sut);
-            sut.setUpDb();
+            try (final MockedStatic<WorkbookFactory> mocked = mockStatic(WorkbookFactory.class)) {
+                mocked.when(() -> WorkbookFactory.create(any(InputStream.class)))
+                        .thenThrow(new IOException("cannot create."));
+                sut.setUpDb();
+            }
             fail("ここに到達したらExceptionが発生していない");
         }
 
         /**
          * SystemRepositoryに{@link nablarch.test.core.reader.TestDataParser}が登録されていない場合、例外が送出されることを確認する。
-         *
-         * @param repository モック化されたリポジトリ
          */
         @Test
-        public void testGetTestDataParser_ComponentNotRegistered(@Mocked final SystemRepository repository) {
+        public void testGetTestDataParser_ComponentNotRegistered() {
             expectedException.expect(IllegalConfigurationException.class);
             expectedException.expectMessage("could not find component. name=[testDataParser].");
-            new Expectations() {{
-                SystemRepository.get("testDataParser");
-                result = null;
-            }};
-            RestTestSupport sut = new RestTestSupport();
-            sut.getTestDataParser();
+            try (final MockedStatic<SystemRepository> mocked = mockStatic(SystemRepository.class)) {
+                mocked.when(() -> SystemRepository.get("testDataParser")).thenReturn(null);
+                
+                RestTestSupport sut = new RestTestSupport();
+                sut.getTestDataParser();
+            }
             fail("ここに到達したらExceptionが発生していない");
         }
 
@@ -222,7 +221,7 @@ public class RestTestSupportTest {
                     this.starting(Description.createTestDescription(clazz, "dummy", new Annotation[0]));
                 }
             };
-            Deencapsulation.setField(sut, "testDescription", description);
+            ReflectionUtil.setFieldValue(sut, "testDescription", description);
         }
 
         /**
