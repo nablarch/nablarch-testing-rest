@@ -1,6 +1,7 @@
 package nablarch.test.core.http;
 
 import nablarch.fw.test.MockConverter;
+import nablarch.fw.web.HttpCookie;
 import nablarch.fw.web.HttpRequest;
 import nablarch.fw.web.HttpResponse;
 import nablarch.fw.web.MockHttpRequest;
@@ -31,6 +32,9 @@ public class ComplexRequestResponseProcessorTest {
                 , "testType");
         HttpResponse response = new HttpResponse();
         response.setHeader("Set-Cookie", "NABLARCH_SID=nablarch_sid");
+        HttpCookie httpCookie = new HttpCookie();
+        httpCookie.getDelegateMap().put("NABLARCH_SID", "nablarch_sid");
+        response.addCookie(httpCookie);
 
         sut.processResponse(new MockHttpRequest(), response);
         sut.processRequest(request);
@@ -50,6 +54,9 @@ public class ComplexRequestResponseProcessorTest {
                 , "testType");
         HttpResponse response = new HttpResponse();
         response.setHeader("Set-Cookie", "NABLARCH_SID=nablarch_sid");
+        HttpCookie httpCookie = new HttpCookie();
+        httpCookie.getDelegateMap().put("NABLARCH_SID", "nablarch_sid");
+        response.addCookie(httpCookie);
 
         sut.processResponse(new MockHttpRequest(), response);
         sut.processRequest(request);
