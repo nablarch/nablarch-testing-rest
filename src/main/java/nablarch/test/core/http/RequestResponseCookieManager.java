@@ -26,10 +26,10 @@ public class RequestResponseCookieManager implements RequestResponseProcessor {
         if (request instanceof RestMockHttpRequest) {
             RestMockHttpRequest restMockHttpRequest = (RestMockHttpRequest) request;
             if (cookieValue != null) {
-                logDebug("Set cookie: " + cookieName + " = " + cookieValue);
                 HttpCookie cookie = restMockHttpRequest.getCookie();
                 cookie.put(cookieName, cookieValue);
                 restMockHttpRequest.setCookie(cookie);
+                logDebug("Set cookie: " + cookieName + " = " + cookieValue);
             }
         }
 
@@ -45,8 +45,8 @@ public class RequestResponseCookieManager implements RequestResponseProcessor {
         List<HttpCookie> cookies = response.getHttpCookies();
 
         for (HttpCookie cookie : cookies) {
-            if (cookie.getDelegateMap().containsKey(cookieName)) {
-                cookieValue = cookie.getDelegateMap().get(cookieName);
+            if (cookie.containsKey(cookieName)) {
+                cookieValue = cookie.get(cookieName);
                 logDebug("Get cookie: " + cookieName + " = " + cookieValue);
                 return response;
             }

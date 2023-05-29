@@ -9,15 +9,7 @@ import nablarch.fw.web.HttpResponse;
  * リクエストのCookieとして付加する。
  */
 public class NablarchSIDManager extends RequestResponseCookieManager {
-
-    @Override
-    public HttpRequest processRequest(HttpRequest request) {
-        return super.processRequest(request);
-    }
-
-    @Override
-    public HttpResponse processResponse(HttpRequest request, HttpResponse response) {
-        super.setCookieName("NABLARCH_SID");
-        return super.processResponse(request, response);
+    public NablarchSIDManager() {
+        setCookieName("NABLARCH_SID");
     }
 }

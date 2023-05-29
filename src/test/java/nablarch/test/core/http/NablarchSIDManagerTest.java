@@ -56,13 +56,13 @@ public class NablarchSIDManagerTest {
     }
 
     @Test
-    public void testReset() throws UnsupportedEncodingException {
+    public void testChangeCookieName() throws UnsupportedEncodingException {
         HttpRequest request = new RestMockHttpRequest(Collections.singletonList(new MockConverter())
-                , "testType");
+            , "testType");
         HttpResponse response = new HttpResponse();
-        response.setHeader("Set-Cookie", "NABLARCH_SID=nablarch_sid");
+        response.setHeader("Set-Cookie", "ANOTHER_SID=nablarch_sid");
         HttpCookie httpCookie = new HttpCookie();
-        httpCookie.getDelegateMap().put("NABLARCH_SID", "nablarch_sid");
+        httpCookie.getDelegateMap().put("ANOTHER_SID", "nablarch_sid");
         response.addCookie(httpCookie);
 
         PrintStream originalStdOut = System.out;
@@ -71,84 +71,19 @@ public class NablarchSIDManagerTest {
             System.setOut(new PrintStream(onMemoryOut, true, "UTF-8"));
 
             NablarchSIDManager sut = new NablarchSIDManager();
+            sut.setCookieName("ANOTHER_SID");
             sut.processResponse(new MockHttpRequest(), response);
-            sut.reset();
             sut.processRequest(request);
-            assertNull(request.getHeader("Cookie"));
+            assertThat(request.getHeader("Cookie"), is("ANOTHER_SID=nablarch_sid"));
 
             String logText = new String(onMemoryOut.toByteArray(), Charset.forName("UTF-8"));
-            assertThat(logText, containsString("Get cookie: NABLARCH_SID = nablarch_sid"));
-            assertThat(logText, not(containsString("Set cookie: NABLARCH_SID = nablarch_sid")));
+            assertThat(logText, allOf(
+                containsString("Get cookie: ANOTHER_SID = nablarch_sid"),
+                containsString("Set cookie: ANOTHER_SID = nablarch_sid")));
+            assertThat(logText, not(containsString("Set-Cookie header value does not contain NABLARCH_SID.")));
         } finally {
             System.setOut(originalStdOut);
         }
     }
 
-    @Test
-    public void testCookieNotSet() throws UnsupportedEncodingException {
-        PrintStream originalStdOut = System.out;
-        try {
-            ByteArrayOutputStream onMemoryOut = new ByteArrayOutputStream();
-            System.setOut(new PrintStream(onMemoryOut, true, "UTF-8"));
-
-            NablarchSIDManager sut = new NablarchSIDManager();
-            sut.processResponse(new MockHttpRequest(), new HttpResponse());
-
-            String logText = new String(onMemoryOut.toByteArray(), Charset.forName("UTF-8"));
-            assertThat(logText, containsString("Set-Cookie header value does not contain NABLARCH_SID."));
-        } finally {
-            System.setOut(originalStdOut);
-        }
-    }
-
-    @Test
-    public void testEmptyCookie() throws UnsupportedEncodingException {
-        HttpResponse response = new HttpResponse();
-        response.setHeader("Set-Cookie", "");
-
-        PrintStream originalStdOut = System.out;
-        try {
-            ByteArrayOutputStream onMemoryOut = new ByteArrayOutputStream();
-            System.setOut(new PrintStream(onMemoryOut, true, "UTF-8"));
-
-            NablarchSIDManager sut = new NablarchSIDManager();
-            sut.processResponse(new MockHttpRequest(), response);
-
-            String logText = new String(onMemoryOut.toByteArray(), Charset.forName("UTF-8"));
-            assertThat(logText, containsString("Set-Cookie header value does not contain NABLARCH_SID."));
-        } finally {
-            System.setOut(originalStdOut);
-        }
-    }
-
-    @Test
-    public void testHasNotSID() throws UnsupportedEncodingException {
-        HttpResponse response = new HttpResponse();
-        response.setHeader("Set-Cookie", "cookie=abc");
-        HttpCookie httpCookie = new HttpCookie();
-        httpCookie.getDelegateMap().put("cookie", "abc");
-        response.addCookie(httpCookie);
-
-        PrintStream originalStdOut = System.out;
-        try {
-            ByteArrayOutputStream onMemoryOut = new ByteArrayOutputStream();
-            System.setOut(new PrintStream(onMemoryOut, true, "UTF-8"));
-
-            NablarchSIDManager sut = new NablarchSIDManager();
-            sut.processResponse(new MockHttpRequest(), response);
-
-            String logText = new String(onMemoryOut.toByteArray(), Charset.forName("UTF-8"));
-            assertThat(logText, containsString("Set-Cookie header value does not contain NABLARCH_SID."));
-        } finally {
-            System.setOut(originalStdOut);
-        }
-    }
-
-    @Test
-    public void testNotRestMockHttpRequest() {
-        MockHttpRequest mockHttpRequest = new MockHttpRequest();
-        NablarchSIDManager sut = new NablarchSIDManager();
-        HttpRequest processedRequest = sut.processRequest(mockHttpRequest);
-        assertNull(processedRequest.getHeader("Cookie"));
-    }
 }
