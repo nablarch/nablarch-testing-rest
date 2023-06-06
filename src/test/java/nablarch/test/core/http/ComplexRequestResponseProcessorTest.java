@@ -33,7 +33,7 @@ public class ComplexRequestResponseProcessorTest {
         HttpResponse response = new HttpResponse();
         response.setHeader("Set-Cookie", "NABLARCH_SID=nablarch_sid");
         HttpCookie httpCookie = new HttpCookie();
-        httpCookie.getDelegateMap().put("NABLARCH_SID", "nablarch_sid");
+        httpCookie.put("NABLARCH_SID", "nablarch_sid");
         response.addCookie(httpCookie);
 
         sut.processResponse(new MockHttpRequest(), response);
@@ -55,7 +55,7 @@ public class ComplexRequestResponseProcessorTest {
         HttpResponse response = new HttpResponse();
         response.setHeader("Set-Cookie", "NABLARCH_SID=nablarch_sid");
         HttpCookie httpCookie = new HttpCookie();
-        httpCookie.getDelegateMap().put("NABLARCH_SID", "nablarch_sid");
+        httpCookie.put("NABLARCH_SID", "nablarch_sid");
         response.addCookie(httpCookie);
 
         sut.processResponse(new MockHttpRequest(), response);

@@ -38,7 +38,7 @@ public class RequestResponseCookieManagerTest {
             , "testType");
         HttpResponse response = new HttpResponse();
         HttpCookie httpCookie = new HttpCookie();
-        httpCookie.getDelegateMap().put("JSESSIONID", "jsessionid");
+        httpCookie.put("JSESSIONID", "jsessionid");
         response.addCookie(httpCookie);
 
         PrintStream originalStdOut = System.out;
@@ -67,7 +67,7 @@ public class RequestResponseCookieManagerTest {
             , "testType");
         HttpResponse response = new HttpResponse();
         HttpCookie httpCookie = new HttpCookie();
-        httpCookie.getDelegateMap().put("JSESSIONID", "jsessionid");
+        httpCookie.put("JSESSIONID", "jsessionid");
         response.addCookie(httpCookie);
 
         PrintStream originalStdOut = System.out;
@@ -146,7 +146,7 @@ public class RequestResponseCookieManagerTest {
         HttpResponse response = new HttpResponse();
         response.setHeader("Set-Cookie", "cookie=abc");
         HttpCookie httpCookie = new HttpCookie();
-        httpCookie.getDelegateMap().put("cookie", "abc");
+        httpCookie.put("cookie", "abc");
         response.addCookie(httpCookie);
 
         PrintStream originalStdOut = System.out;
