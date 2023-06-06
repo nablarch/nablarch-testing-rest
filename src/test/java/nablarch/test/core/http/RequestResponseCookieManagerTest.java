@@ -116,17 +116,8 @@ public class RequestResponseCookieManagerTest {
             Matchers.hasProperty("message", Matchers.is("cookieName must be set."))
         ));
 
-
-        PrintStream originalStdOut = System.out;
-        try {
-            ByteArrayOutputStream onMemoryOut = new ByteArrayOutputStream();
-            System.setOut(new PrintStream(onMemoryOut, true, "UTF-8"));
-
-            RequestResponseCookieManager sut = new RequestResponseCookieManager();
-            sut.processResponse(new MockHttpRequest(), new HttpResponse());
-        } finally {
-            System.setOut(originalStdOut);
-        }
+        RequestResponseCookieManager sut = new RequestResponseCookieManager();
+        sut.processResponse(new MockHttpRequest(), new HttpResponse());
     }
 
     @Test
