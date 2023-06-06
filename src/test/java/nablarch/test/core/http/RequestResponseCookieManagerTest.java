@@ -34,17 +34,18 @@ public class RequestResponseCookieManagerTest {
 
     @Test
     public void testHasSID() throws UnsupportedEncodingException {
-        HttpRequest request = new RestMockHttpRequest(Collections.singletonList(new MockConverter())
-            , "testType");
-        HttpResponse response = new HttpResponse();
-        HttpCookie httpCookie = new HttpCookie();
-        httpCookie.put("JSESSIONID", "jsessionid");
-        response.addCookie(httpCookie);
 
         PrintStream originalStdOut = System.out;
         try {
             ByteArrayOutputStream onMemoryOut = new ByteArrayOutputStream();
             System.setOut(new PrintStream(onMemoryOut, true, "UTF-8"));
+
+            HttpRequest request = new RestMockHttpRequest(Collections.singletonList(new MockConverter())
+            , "testType");
+            HttpResponse response = new HttpResponse();
+            HttpCookie httpCookie = new HttpCookie();
+            httpCookie.put("JSESSIONID", "jsessionid");
+            response.addCookie(httpCookie);
 
             RequestResponseCookieManager sut = new RequestResponseCookieManager();
             sut.setCookieName("JSESSIONID");
@@ -63,17 +64,18 @@ public class RequestResponseCookieManagerTest {
 
     @Test
     public void testReset() throws UnsupportedEncodingException {
-        HttpRequest request = new RestMockHttpRequest(Collections.singletonList(new MockConverter())
-            , "testType");
-        HttpResponse response = new HttpResponse();
-        HttpCookie httpCookie = new HttpCookie();
-        httpCookie.put("JSESSIONID", "jsessionid");
-        response.addCookie(httpCookie);
 
         PrintStream originalStdOut = System.out;
         try {
             ByteArrayOutputStream onMemoryOut = new ByteArrayOutputStream();
             System.setOut(new PrintStream(onMemoryOut, true, "UTF-8"));
+
+            HttpRequest request = new RestMockHttpRequest(Collections.singletonList(new MockConverter())
+                , "testType");
+            HttpResponse response = new HttpResponse();
+            HttpCookie httpCookie = new HttpCookie();
+            httpCookie.put("JSESSIONID", "jsessionid");
+            response.addCookie(httpCookie);
 
             RequestResponseCookieManager sut = new RequestResponseCookieManager();
             sut.setCookieName("JSESSIONID");
@@ -92,6 +94,7 @@ public class RequestResponseCookieManagerTest {
 
     @Test
     public void testCookieNotSet() throws UnsupportedEncodingException {
+
         PrintStream originalStdOut = System.out;
         try {
             ByteArrayOutputStream onMemoryOut = new ByteArrayOutputStream();
@@ -142,15 +145,16 @@ public class RequestResponseCookieManagerTest {
 
     @Test
     public void testHasNotSID() throws UnsupportedEncodingException {
-        HttpResponse response = new HttpResponse();
-        HttpCookie httpCookie = new HttpCookie();
-        httpCookie.put("cookie", "abc");
-        response.addCookie(httpCookie);
 
         PrintStream originalStdOut = System.out;
         try {
             ByteArrayOutputStream onMemoryOut = new ByteArrayOutputStream();
             System.setOut(new PrintStream(onMemoryOut, true, "UTF-8"));
+
+            HttpResponse response = new HttpResponse();
+            HttpCookie httpCookie = new HttpCookie();
+            httpCookie.put("cookie", "abc");
+            response.addCookie(httpCookie);
 
             RequestResponseCookieManager sut = new RequestResponseCookieManager();
             sut.setCookieName("JSESSIONID");

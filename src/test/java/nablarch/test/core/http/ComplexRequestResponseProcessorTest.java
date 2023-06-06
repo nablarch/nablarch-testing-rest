@@ -25,15 +25,15 @@ public class ComplexRequestResponseProcessorTest {
         NablarchSIDManager sidManager = new NablarchSIDManager();
         List<RequestResponseProcessor> processors = Collections.<RequestResponseProcessor>singletonList(sidManager);
 
-        ComplexRequestResponseProcessor sut = new ComplexRequestResponseProcessor();
-        sut.setProcessors(processors);
-
         HttpRequest request = new RestMockHttpRequest(Collections.singletonList(new MockConverter())
                 , "testType");
         HttpResponse response = new HttpResponse();
         HttpCookie httpCookie = new HttpCookie();
         httpCookie.put("NABLARCH_SID", "nablarch_sid");
         response.addCookie(httpCookie);
+
+        ComplexRequestResponseProcessor sut = new ComplexRequestResponseProcessor();
+        sut.setProcessors(processors);
 
         sut.processResponse(new MockHttpRequest(), response);
         sut.processRequest(request);
@@ -46,15 +46,15 @@ public class ComplexRequestResponseProcessorTest {
         TestProcessor testProcessor = new TestProcessor();
         List<RequestResponseProcessor> processors = Arrays.asList(sidManager, testProcessor);
 
-        ComplexRequestResponseProcessor sut = new ComplexRequestResponseProcessor();
-        sut.setProcessors(processors);
-
         HttpRequest request = new RestMockHttpRequest(Collections.singletonList(new MockConverter())
                 , "testType");
         HttpResponse response = new HttpResponse();
         HttpCookie httpCookie = new HttpCookie();
         httpCookie.put("NABLARCH_SID", "nablarch_sid");
         response.addCookie(httpCookie);
+
+        ComplexRequestResponseProcessor sut = new ComplexRequestResponseProcessor();
+        sut.setProcessors(processors);
 
         sut.processResponse(new MockHttpRequest(), response);
         sut.processRequest(request);
@@ -69,12 +69,12 @@ public class ComplexRequestResponseProcessorTest {
         TestProcessor testProcessor = new TestProcessor();
         List<RequestResponseProcessor> processors = Arrays.asList(sidManager, testProcessor);
 
-        ComplexRequestResponseProcessor sut = new ComplexRequestResponseProcessor();
-        sut.setProcessors(processors);
-
         HttpRequest request = new RestMockHttpRequest(Collections.singletonList(new MockConverter())
                 , "testType");
         HttpResponse response = new HttpResponse();
+
+        ComplexRequestResponseProcessor sut = new ComplexRequestResponseProcessor();
+        sut.setProcessors(processors);
 
         sut.processResponse(new MockHttpRequest(), response);
         sut.reset();

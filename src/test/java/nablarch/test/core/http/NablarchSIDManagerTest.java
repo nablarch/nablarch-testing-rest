@@ -28,17 +28,18 @@ import static org.junit.Assert.assertThat;
 public class NablarchSIDManagerTest {
     @Test
     public void testHasSID() throws UnsupportedEncodingException {
-        HttpRequest request = new RestMockHttpRequest(Collections.singletonList(new MockConverter())
-                , "testType");
-        HttpResponse response = new HttpResponse();
-        HttpCookie httpCookie = new HttpCookie();
-        httpCookie.put("NABLARCH_SID", "nablarch_sid");
-        response.addCookie(httpCookie);
 
         PrintStream originalStdOut = System.out;
         try {
             ByteArrayOutputStream onMemoryOut = new ByteArrayOutputStream();
             System.setOut(new PrintStream(onMemoryOut, true, "UTF-8"));
+
+            HttpRequest request = new RestMockHttpRequest(Collections.singletonList(new MockConverter())
+                , "testType");
+            HttpResponse response = new HttpResponse();
+            HttpCookie httpCookie = new HttpCookie();
+            httpCookie.put("NABLARCH_SID", "nablarch_sid");
+            response.addCookie(httpCookie);
 
             NablarchSIDManager sut = new NablarchSIDManager();
             sut.processResponse(new MockHttpRequest(), response);
@@ -56,17 +57,18 @@ public class NablarchSIDManagerTest {
 
     @Test
     public void testChangeCookieName() throws UnsupportedEncodingException {
-        HttpRequest request = new RestMockHttpRequest(Collections.singletonList(new MockConverter())
-            , "testType");
-        HttpResponse response = new HttpResponse();
-        HttpCookie httpCookie = new HttpCookie();
-        httpCookie.put("ANOTHER_SID", "nablarch_sid");
-        response.addCookie(httpCookie);
 
         PrintStream originalStdOut = System.out;
         try {
             ByteArrayOutputStream onMemoryOut = new ByteArrayOutputStream();
             System.setOut(new PrintStream(onMemoryOut, true, "UTF-8"));
+
+            HttpRequest request = new RestMockHttpRequest(Collections.singletonList(new MockConverter())
+                , "testType");
+            HttpResponse response = new HttpResponse();
+            HttpCookie httpCookie = new HttpCookie();
+            httpCookie.put("ANOTHER_SID", "nablarch_sid");
+            response.addCookie(httpCookie);
 
             NablarchSIDManager sut = new NablarchSIDManager();
             sut.setCookieName("ANOTHER_SID");
