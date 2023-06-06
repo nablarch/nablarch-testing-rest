@@ -31,7 +31,6 @@ public class ComplexRequestResponseProcessorTest {
         HttpRequest request = new RestMockHttpRequest(Collections.singletonList(new MockConverter())
                 , "testType");
         HttpResponse response = new HttpResponse();
-        response.setHeader("Set-Cookie", "NABLARCH_SID=nablarch_sid");
         HttpCookie httpCookie = new HttpCookie();
         httpCookie.put("NABLARCH_SID", "nablarch_sid");
         response.addCookie(httpCookie);
@@ -53,7 +52,6 @@ public class ComplexRequestResponseProcessorTest {
         HttpRequest request = new RestMockHttpRequest(Collections.singletonList(new MockConverter())
                 , "testType");
         HttpResponse response = new HttpResponse();
-        response.setHeader("Set-Cookie", "NABLARCH_SID=nablarch_sid");
         HttpCookie httpCookie = new HttpCookie();
         httpCookie.put("NABLARCH_SID", "nablarch_sid");
         response.addCookie(httpCookie);
@@ -77,7 +75,6 @@ public class ComplexRequestResponseProcessorTest {
         HttpRequest request = new RestMockHttpRequest(Collections.singletonList(new MockConverter())
                 , "testType");
         HttpResponse response = new HttpResponse();
-        response.setHeader("Set-Cookie", "NABLARCH_SID=nablarch_sid");
 
         sut.processResponse(new MockHttpRequest(), response);
         sut.reset();

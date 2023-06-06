@@ -31,7 +31,6 @@ public class NablarchSIDManagerTest {
         HttpRequest request = new RestMockHttpRequest(Collections.singletonList(new MockConverter())
                 , "testType");
         HttpResponse response = new HttpResponse();
-        response.setHeader("Set-Cookie", "NABLARCH_SID=nablarch_sid");
         HttpCookie httpCookie = new HttpCookie();
         httpCookie.put("NABLARCH_SID", "nablarch_sid");
         response.addCookie(httpCookie);
@@ -60,7 +59,6 @@ public class NablarchSIDManagerTest {
         HttpRequest request = new RestMockHttpRequest(Collections.singletonList(new MockConverter())
             , "testType");
         HttpResponse response = new HttpResponse();
-        response.setHeader("Set-Cookie", "ANOTHER_SID=nablarch_sid");
         HttpCookie httpCookie = new HttpCookie();
         httpCookie.put("ANOTHER_SID", "nablarch_sid");
         response.addCookie(httpCookie);

@@ -123,7 +123,6 @@ public class RequestResponseCookieManagerTest {
     @Test
     public void testEmptyCookie() throws UnsupportedEncodingException {
         HttpResponse response = new HttpResponse();
-        response.setHeader("Set-Cookie", "");
 
         PrintStream originalStdOut = System.out;
         try {
@@ -144,7 +143,6 @@ public class RequestResponseCookieManagerTest {
     @Test
     public void testHasNotSID() throws UnsupportedEncodingException {
         HttpResponse response = new HttpResponse();
-        response.setHeader("Set-Cookie", "cookie=abc");
         HttpCookie httpCookie = new HttpCookie();
         httpCookie.put("cookie", "abc");
         response.addCookie(httpCookie);
