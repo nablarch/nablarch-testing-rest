@@ -72,6 +72,9 @@ public class ComplexRequestResponseProcessorTest {
         HttpRequest request = new RestMockHttpRequest(Collections.singletonList(new MockConverter())
                 , "testType");
         HttpResponse response = new HttpResponse();
+        HttpCookie httpCookie = new HttpCookie();
+        httpCookie.put("NABLARCH_SID", "nablarch_sid");
+        response.addCookie(httpCookie);
 
         ComplexRequestResponseProcessor sut = new ComplexRequestResponseProcessor();
         sut.setProcessors(processors);
