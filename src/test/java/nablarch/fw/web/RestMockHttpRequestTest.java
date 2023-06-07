@@ -44,7 +44,7 @@ public class RestMockHttpRequestTest {
             + LS;
     /** JSONをボディにもつPOSTリクエスト */
     private static final String POST_JSON_REQUEST = "POST /test HTTP/1.1" + LS
-            + "Cookie: {cookie=dummy}" + LS
+            + "Cookie: cookie=dummy" + LS
             + "test: OK" + LS
             + "Content-Length: 19" + LS
             + "Content-Type: application/json" + LS
