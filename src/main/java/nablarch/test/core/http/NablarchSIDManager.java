@@ -1,8 +1,5 @@
 package nablarch.test.core.http;
 
-import nablarch.fw.web.HttpRequest;
-import nablarch.fw.web.HttpResponse;
-
 /**
  * セッションストアを引き継ぐためのプロセッサ。
  * セッションIDをレスポンスの"Set-Cookie"ヘッダーから抽出し
