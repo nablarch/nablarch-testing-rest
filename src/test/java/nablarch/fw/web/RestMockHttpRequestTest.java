@@ -227,7 +227,6 @@ public class RestMockHttpRequestTest {
         assertThat(sut.toString(), is(POST_JSON_REQUEST));
     }
 
-    @SuppressWarnings("deprecation")
     @Rule
     public ExpectedException expectedException = ExpectedException.none();
 

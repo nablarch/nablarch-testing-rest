@@ -29,7 +29,6 @@ import static org.junit.Assert.assertNull;
  */
 public class RequestResponseCookieManagerTest {
 
-    @SuppressWarnings("deprecation")
     @Rule
     public ExpectedException expectedException = ExpectedException.none();
 
