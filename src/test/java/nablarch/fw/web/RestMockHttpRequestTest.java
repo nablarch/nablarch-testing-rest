@@ -1,12 +1,13 @@
 package nablarch.fw.web;
 
-import mockit.Expectations;
 import nablarch.fw.test.MockConverter;
 import nablarch.fw.test.NoContentConvertibleMockConverter;
 import org.hamcrest.CoreMatchers;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
+import org.mockito.MockedConstruction;
+import org.mockito.Mockito;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -263,18 +264,19 @@ public class RestMockHttpRequestTest {
      */
     @Test
     public void testAbnormalURIConstructorThrowsURISyntaxException() throws URISyntaxException {
-        new Expectations(URI.class) {{
-            new URI(anyString);
-            result = new URISyntaxException("uri", "invalid format");
-        }};
         expectedException.expect(IllegalArgumentException.class);
         expectedException.expectMessage("url encoding failed. cause[invalid format: uri]");
         expectedException.expectCause(CoreMatchers.<Throwable>instanceOf(URISyntaxException.class));
         RestMockHttpRequest sut = new RestMockHttpRequest(
                 Collections.singletonList(new MockConverter()), "text/plain")
                 .setRequestUri("/test");
-        String request = sut.toString();
-        fail("ここには到達しない。" + request);
+        
+        try (final MockedConstruction<URI> mocked = Mockito.mockConstructionWithAnswer(URI.class, invocation -> {
+            throw new URISyntaxException("uri", "invalid format");
+        })) {
+            String request = sut.toString();
+            fail("ここには到達しない。" + request);
+        }
     }
 
     /**

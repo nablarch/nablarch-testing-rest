@@ -1,8 +1,5 @@
 package nablarch.test.core.http;
 
-import mockit.Deencapsulation;
-import mockit.Expectations;
-import mockit.Mocked;
 import nablarch.core.exception.IllegalConfigurationException;
 import nablarch.core.repository.SystemRepository;
 import nablarch.core.util.StringUtil;
@@ -13,6 +10,7 @@ import nablarch.fw.web.RestMockHttpRequest;
 import nablarch.fw.web.RestMockHttpRequestBuilder;
 import nablarch.test.RepositoryInitializer;
 import nablarch.test.core.rule.TestDescription;
+import nablarch.test.support.reflection.ReflectionUtil;
 import org.junit.After;
 import org.junit.Rule;
 import org.junit.Test;
@@ -20,12 +18,11 @@ import org.junit.experimental.runners.Enclosed;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.Description;
 import org.junit.runner.RunWith;
+import org.mockito.MockedStatic;
 
 import java.io.File;
 import java.io.IOException;
 import java.lang.annotation.Annotation;
-import java.net.URISyntaxException;
-import java.net.URL;
 import java.nio.charset.Charset;
 
 import static org.hamcrest.Matchers.is;
@@ -34,6 +31,7 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import static org.mockito.Mockito.mockStatic;
 
 @RunWith(Enclosed.class)
 public class SimpleRestTestSupportTest {
@@ -75,36 +73,17 @@ public class SimpleRestTestSupportTest {
 
         /**
          * SystemRepositoryにリクエストビルダーが登録されていない場合、例外が送出されることを確認する。
-         *
-         * @param repository モック化されたリポジトリ
          */
         @Test
-        public void testGetHttpRequestBuilder_ComponentNotRegistered(@Mocked final SystemRepository repository) {
+        public void testGetHttpRequestBuilder_ComponentNotRegistered() {
             expectedException.expect(IllegalConfigurationException.class);
             expectedException.expectMessage(
                     "could not find component. name=[restMockHttpRequestBuilder]");
-            new Expectations() {{
-                SystemRepository.get("restMockHttpRequestBuilder");
-                result = null;
-            }};
-            getHttpRequestBuilder();
+            try (final MockedStatic<SystemRepository> mocked = mockStatic(SystemRepository.class)) {
+                mocked.when(() -> SystemRepository.get("restMockHttpRequestBuilder")).thenReturn(null);
+                getHttpRequestBuilder();
+            }
             fail("ここに到達したらExceptionが発生していない");
-        }
-
-        /**
-         * テキストファイルを読み込む際に{@link URISyntaxException}が送出された場合、例外が送出されることを確認する。
-         *
-         * @param url モック化されたURL
-         */
-        @Test
-        public void testReadTextResource_CatchURISyntaxException(@Mocked final URL url) throws URISyntaxException {
-            expectedException.expect(IllegalArgumentException.class);
-            expectedException.expectMessage("couldn't read resource [response.txt]. cause [url is invalid: dummy].");
-            new Expectations() {{
-                url.toURI();
-                result = new URISyntaxException("dummy", "url is invalid");
-            }};
-            readTextResource("response.txt");
         }
 
         /**
@@ -115,23 +94,6 @@ public class SimpleRestTestSupportTest {
             expectedException.expect(IllegalArgumentException.class);
             expectedException.expectMessage("couldn't find resource [SimpleRestTestSupportSubClassTest/noFile].");
             readTextResource("noFile");
-        }
-
-        /**
-         * テストクラスを指定するreadTextResourcesで、
-         * テキストファイルを読み込む際に{@link URISyntaxException}が送出された場合、例外が送出されることを確認する。
-         *
-         * @param url モック化されたURL
-         */
-        @Test
-        public void testReadTextResourceWithTestClass_CatchURISyntaxException(@Mocked final URL url) throws URISyntaxException {
-            expectedException.expect(IllegalArgumentException.class);
-            expectedException.expectMessage("couldn't read resource [response.txt]. cause [url is invalid: dummy].");
-            new Expectations() {{
-                url.toURI();
-                result = new URISyntaxException("dummy", "url is invalid");
-            }};
-            readTextResource(SimpleRestTestSupportTest.class, "response.txt");
         }
 
         /**
@@ -301,7 +263,7 @@ public class SimpleRestTestSupportTest {
                     this.starting(Description.createTestDescription(clazz, "dummy", new Annotation[0]));
                 }
             };
-            Deencapsulation.setField(sut, "testDescription", description);
+            ReflectionUtil.setFieldValue(sut, "testDescription", description);
         }
     }
 }

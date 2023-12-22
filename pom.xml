@@ -6,7 +6,7 @@
 
   <groupId>com.nablarch.framework</groupId>
   <artifactId>nablarch-testing-rest</artifactId>
-  <version>1.2.0</version>
+  <version>2.0.0</version>
 
   <scm>
     <connection>scm:git:git://github.com/nablarch/${project.artifactId}.git</connection>
@@ -17,81 +17,23 @@
   <parent>
     <groupId>com.nablarch</groupId>
     <artifactId>nablarch-parent</artifactId>
-    <version>5u23</version>
+    <version>6</version>
   </parent>
 
-  <profiles>
-    <profile>
-      <id>java8-or-lower</id>
-      <activation>
-        <activeByDefault>true</activeByDefault>
-      </activation>
-      <dependencies>
-        <dependency>
-          <groupId>com.nablarch.framework</groupId>
-          <artifactId>nablarch-testing-jetty6</artifactId>
-          <scope>test</scope>
-        </dependency>
-        <dependency>
-          <groupId>javax.servlet</groupId>
-          <artifactId>servlet-api</artifactId>
-          <version>2.5</version>
-          <scope>provided</scope>
-        </dependency>
-      </dependencies>
-    </profile>
-    <profile>
-      <id>java11</id>
-      <dependencies>
-        <dependency>
-          <groupId>com.nablarch.framework</groupId>
-          <artifactId>nablarch-testing-jetty9</artifactId>
-          <scope>test</scope>
-        </dependency>
-        <dependency>
-          <groupId>com.sun.activation</groupId>
-          <artifactId>javax.activation</artifactId>
-          <version>1.2.0</version>
-        </dependency>
-        <dependency>
-          <groupId>javax.xml.bind</groupId>
-          <artifactId>jaxb-api</artifactId>
-          <version>2.3.0</version>
-        </dependency>
-        <dependency>
-          <groupId>com.sun.xml.bind</groupId>
-          <artifactId>jaxb-core</artifactId>
-          <version>2.3.0</version>
-        </dependency>
-        <dependency>
-          <groupId>com.sun.xml.bind</groupId>
-          <artifactId>jaxb-impl</artifactId>
-          <version>2.3.0</version>
-        </dependency>
-        <dependency>
-          <groupId>javax.annotation</groupId>
-          <artifactId>javax.annotation-api</artifactId>
-          <version>1.3.2</version>
-        </dependency>
-        <dependency>
-          <groupId>javax.servlet</groupId>
-          <artifactId>javax.servlet-api</artifactId>
-          <version>3.1.0</version>
-          <scope>provided</scope>
-        </dependency>
-      </dependencies>
-      <build>
-        <testResources>
-          <testResource>
-            <directory>${project.basedir}/src/test/java11-resources</directory>
-          </testResource>
-          <testResource>
-            <directory>${project.basedir}/src/test/resources</directory>
-          </testResource>
-        </testResources>
-      </build>
-    </profile>
-  </profiles>
+  <properties>
+    <jetty.version>jetty12</jetty.version>
+  </properties>
+
+  <build>
+    <testResources>
+      <testResource>
+        <directory>src/test/resources</directory>
+      </testResource>
+      <testResource>
+        <directory>${project.basedir}/src/test/env/${jetty.version}/resources</directory>
+      </testResource>
+    </testResources>
+  </build>
 
   <dependencies>
     <dependency>
@@ -106,10 +48,42 @@
     </dependency>
 
     <dependency>
-      <groupId>org.jmockit</groupId>
-      <artifactId>jmockit</artifactId>
+      <groupId>jakarta.activation</groupId>
+      <artifactId>jakarta.activation-api</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>jakarta.xml.bind</groupId>
+      <artifactId>jakarta.xml.bind-api</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>com.sun.xml.bind</groupId>
+      <artifactId>jaxb-core</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>com.sun.xml.bind</groupId>
+      <artifactId>jaxb-impl</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>jakarta.annotation</groupId>
+      <artifactId>jakarta.annotation-api</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>jakarta.servlet</groupId>
+      <artifactId>jakarta.servlet-api</artifactId>
+      <scope>provided</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.mockito</groupId>
+      <artifactId>mockito-core</artifactId>
       <scope>test</scope>
     </dependency>
+
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
@@ -123,6 +97,12 @@
     </dependency>
 
     <!--  テストでRESTサービスを動かすための設定  -->
+    <dependency>
+      <groupId>com.nablarch.framework</groupId>
+      <artifactId>nablarch-testing-${jetty.version}</artifactId>
+      <scope>test</scope>
+    </dependency>
+
     <dependency>
       <groupId>com.nablarch.configuration</groupId>
       <artifactId>nablarch-main-default-configuration</artifactId>
