@@ -104,26 +104,8 @@
     </dependency>
 
     <dependency>
-      <groupId>com.nablarch.configuration</groupId>
-      <artifactId>nablarch-main-default-configuration</artifactId>
-      <scope>test</scope>
-    </dependency>
-
-    <dependency>
       <groupId>com.nablarch.framework</groupId>
       <artifactId>nablarch-fw-jaxrs</artifactId>
-      <scope>test</scope>
-    </dependency>
-
-    <dependency>
-      <groupId>com.nablarch.integration</groupId>
-      <artifactId>nablarch-jersey-adaptor</artifactId>
-      <scope>test</scope>
-    </dependency>
-
-    <dependency>
-      <groupId>com.nablarch.integration</groupId>
-      <artifactId>nablarch-jackson-adaptor</artifactId>
       <scope>test</scope>
     </dependency>
 
