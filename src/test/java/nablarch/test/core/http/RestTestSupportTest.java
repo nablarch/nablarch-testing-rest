@@ -48,12 +48,8 @@ public class RestTestSupportTest {
          * 存在しないリソース名を指定して{@link RestTestSupport#setUpDbIfSheetExists(String)}を呼び出した場合、セットアップがスキップされ例外が送出されないことを確認する。
          */
         @Test
-        public void testSetUpDbIfSheetExists_SheetNotFound() {
-            try {
-                setUpDbIfSheetExists("nonExistentSheet");
-            } catch (Exception e) {
-                fail(e.getMessage());
-            }
+        public void testSetUpDbIfSheetExists_SheetNotFound() throws Exception {
+            setUpDbIfSheetExists("nonExistentSheet");
         }
 
         /**
