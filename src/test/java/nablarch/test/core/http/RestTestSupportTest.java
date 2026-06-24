@@ -45,6 +45,21 @@ public class RestTestSupportTest {
     public static class RestTestSupportSubClassTest extends RestTestSupport {
         
         /**
+         * テストデータのExcelファイルは存在するが、指定したシートが存在しない場合、
+         * {@link RestTestSupport#setUpDbIfSheetExists(String)}がスキップされ例外が送出されないことを確認する。
+         */
+        @Test
+        public void fileExistsButSheetNotFound_setUpDbSkipsWithoutException() {
+            // Given: RestTestSupportSubClassTest.xlsx は存在するが "nonExistentSheet" シートは存在しない
+            // When / Then: 例外が送出されないこと
+            try {
+                setUpDbIfSheetExists("nonExistentSheet");
+            } catch (Exception e) {
+                fail("Exception should not be thrown when sheet does not exist: " + e.getMessage());
+            }
+        }
+
+        /**
          * {@link DbAccessTestSupport}への委譲メソッドを確認する。
          */
         @Test
