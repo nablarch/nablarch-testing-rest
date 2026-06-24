@@ -27,17 +27,16 @@
 
 # Tasks
 
-### #1: 後方互換を保証するテストを追加して RED を確認する
+### #1: リグレッションテストを追加して変更前 GREEN を確認する
 
-**Purpose**: 変更後も後方互換が壊れないことを保証するテストを先に書き、現状では通らない（RED）ことを確認する。
+**Purpose**: 実装変更前に後方互換を保証するリグレッションテストを追加し、現状（変更前）で GREEN であることを確認する。変更後も GREEN をキープすることで後方互換を保証する。
 
 **Prerequisites**: none
 
 **Steps**:
 
-- [ ] 「ファイルはあるがシートがない → `setUpDb` がスキップされる」ケースのテストを `RestTestSupportTest` に追加する
-- [ ] 「`testDataParser` を `YamlTestDataParser` 相当の mock に差し替えると `isResourceExisting()` が呼ばれる」ケースのテストを追加する
-- [ ] `mvn test` を実行し、追加したテストが RED（失敗）であることを確認する
+- [ ] 「ファイルはあるがシートがない → `setUpDb` がスキップされ例外が出ない」ケースのテストを `RestTestSupportTest` に追加する
+- [ ] `mvn test` を実行し、追加したテストが現状（変更前）で GREEN であることを確認する（GREEN でない場合は D-1 の仮定が崩れているため設計を見直す）
 - [ ] self-check（各 Completion criteria を OK/NG で確認し `checks/task-1.md` に記録）
 - [ ] QA expert review（subagent）
 - [ ] language expert review（subagent）
@@ -47,22 +46,42 @@
 **Completion criteria**:
 
 - `RestTestSupportTest` に「ファイルありシートなし → スキップ」のテストケースが存在する
-- `RestTestSupportTest` に「`testDataParser` 差し替えで `isResourceExisting()` が呼ばれる」テストケースが存在する
-- 追加したテストが `mvn test` で失敗する（RED）
+- 追加したテストが変更前の状態で `mvn test` GREEN である
 
-### #2: `getSheet()` を除去して `isResourceExisting()` 経由に統一し GREEN にする
+### #2: `testDataParser` 差し替えの新テストを追加して RED を確認する
 
-**Purpose**: `RestTestSupport#isExisting()` から `getSheet()` を除去し、`testDataParser.isResourceExisting()` のみでシートの存在を判断するよう実装を変更して、#1 のテストを GREEN にする。
+**Purpose**: TDD で `testDataParser` 差し替えが効くことを確認するテストを先に書き、現状（変更前）では RED であることを確認する。
 
 **Prerequisites**: #1
 
 **Steps**:
 
+- [ ] 「`testDataParser` を mock に差し替えると `isResourceExisting()` が呼ばれる」テストを `RestTestSupportTest` に追加する
+- [ ] `mvn test` を実行し、追加したテストが現状（変更前）で RED であることを確認する
+- [ ] self-check（各 Completion criteria を OK/NG で確認し `checks/task-2.md` に記録）
+- [ ] QA expert review（subagent）
+- [ ] language expert review（subagent）
+- [ ] software-engineering expert review（subagent）
+- [ ] user review
+
+**Completion criteria**:
+
+- `RestTestSupportTest` に「`testDataParser` 差し替えで `isResourceExisting()` が呼ばれる」テストケースが存在する
+- 追加したテストが変更前の状態で `mvn test` RED である
+
+### #3: `getSheet()` を除去して `isResourceExisting()` 経由に統一し全テスト GREEN にする
+
+**Purpose**: `RestTestSupport#isExisting()` から `getSheet()` を除去し、`testDataParser.isResourceExisting()` のみでシートの存在を判断するよう実装を変更する。#1（リグレッション）と #2（新テスト）が両方 GREEN になることで完了。
+
+**Prerequisites**: #2
+
+**Steps**:
+
 - [ ] `isExisting()` 内の `getSheet(path, sheetName) != null` を除去し、`getPathOf()` の結果が null でなければ存在するとみなすよう変更する
 - [ ] `getSheet()` メソッド自体を削除する
-- [ ] Apache POI (`WorkbookFactory`, `Workbook`, `Sheet`) の import が不要になった場合は削除する
-- [ ] `mvn test` を実行し、全テスト（#1 で追加したテストを含む）が GREEN であることを確認する
-- [ ] self-check（各 Completion criteria を OK/NG で確認し `checks/task-2.md` に記録）
+- [ ] Apache POI (`WorkbookFactory`, `Workbook`, `Sheet`) の不要になった import を削除する
+- [ ] `mvn test` を実行し、全テスト（#1 リグレッション・#2 新テスト・既存テスト）が GREEN であることを確認する
+- [ ] self-check（各 Completion criteria を OK/NG で確認し `checks/task-3.md` に記録）
 - [ ] QA expert review（subagent）
 - [ ] language expert review（subagent）
 - [ ] software-engineering expert review（subagent）
@@ -72,7 +91,7 @@
 
 - `RestTestSupport.java` に `getSheet()` メソッドが存在しない
 - `isExisting()` 内で `WorkbookFactory` または Apache POI の呼び出しがない
-- `mvn test` が全てグリーン
+- `mvn test` が全て GREEN（#1 リグレッション・#2 新テスト・既存テストを含む）
 
 # Decisions
 
@@ -88,5 +107,5 @@
 - **Status**: not suspended
 - **Date**: 2026-06-24
 - **Last completed**: none
-- **Next**: #1 後方互換を保証するテストを追加して RED を確認する
+- **Next**: #1 リグレッションテストを追加して変更前 GREEN を確認する
 - **Notes**: `getSheet()` はシート確認専用。`dbSupport.setUpDb()` は既に `TestDataParser` 経由で正しく動作している。TDD で進める。
