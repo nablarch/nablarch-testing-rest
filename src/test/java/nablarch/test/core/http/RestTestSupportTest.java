@@ -45,7 +45,7 @@ public class RestTestSupportTest {
     public static class RestTestSupportSubClassTest extends RestTestSupport {
         
         /**
-         * 存在しないリソース名を指定して{@link RestTestSupport#setUpDbIfSheetExists(String)}を呼び出した場合、セットアップがスキップされ例外が送出されないことを確認する。
+         * 存在しないリソース名を指定して{@link RestTestSupport#setUpDbIfSheetExists(String)}を呼び出した場合、例外が送出されないことを確認する。
          */
         @Test
         public void testSetUpDbIfSheetExists_SheetNotFound() throws Exception {
