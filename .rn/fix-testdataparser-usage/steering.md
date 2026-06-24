@@ -104,8 +104,8 @@
 
 # State
 
-- **Status**: not suspended
+- **Status**: paused
 - **Date**: 2026-06-24
-- **Last completed**: none
+- **Last completed**: none（タスク未着手、計画のみ完了）
 - **Next**: #1 リグレッションテストを追加して変更前 GREEN を確認する
-- **Notes**: `getSheet()` はシート確認専用。`dbSupport.setUpDb()` は既に `TestDataParser` 経由で正しく動作している。TDD で進める。
+- **Notes**: ブランチ `fix-testdataparser-usage`（origin/develop ベース）。問題は `RestTestSupport#isExisting()` が `getSheet()` で Apache POI を直接使ってシート確認しており、差し替えた `testDataParser` が無視される点。方針は D-1 の通り `getSheet()` を除去して `isResourceExisting()` 一本化。TDD 順序: #1 リグレッション（変更前 GREEN）→ #2 新テスト（変更前 RED）→ #3 実装変更（全 GREEN）。次の具体的アクション: `RestTestSupportTest` の `RestTestSupportInstanceTest` 内に「テストデータファイルはあるがシートが存在しない場合 `setUpDb` がスキップされ例外が出ない」テストを追加し `mvn test` で GREEN を確認する。
