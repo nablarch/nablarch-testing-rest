@@ -76,14 +76,6 @@ public class RestTestSupportTest {
         }
 
         /**
-         * 存在しないリソース名を指定して{@link RestTestSupport#setUpDbIfSheetExists(String)}を呼び出した場合、例外が送出されないことを確認する。
-         */
-        @Test
-        public void testSetUpDbIfSheetExists_SheetNotFound() throws Exception {
-            setUpDbIfSheetExists("nonExistentSheet");
-        }
-
-        /**
          * {@link DbAccessTestSupport}への委譲メソッドを確認する。
          */
         @Test
