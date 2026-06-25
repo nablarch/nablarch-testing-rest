@@ -6,6 +6,7 @@ import nablarch.fw.web.HttpResponse;
 import nablarch.test.RepositoryInitializer;
 import nablarch.test.TestSupport;
 import nablarch.test.core.db.DbAccessTestSupport;
+import nablarch.test.core.reader.TestDataParser;
 import nablarch.test.core.rule.TestDescription;
 import nablarch.test.support.reflection.ReflectionUtil;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
@@ -33,6 +34,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.withSettings;
 
 /**
@@ -284,6 +286,34 @@ public class RestTestSupportTest {
             sut.setUpDbIfSheetExists("nonExistentSheet");
 
             verify(spy, never()).setUpDb(any());
+        }
+
+        /**
+         * {@code testDataParser} を差し替えた場合に {@code isResourceExisting()} の結果が尊重され {@code setUpDb} が呼ばれることを確認する。
+         */
+        @Test
+        public void testSetUpDbIfSheetExists_testDataParserReturnsNotExisting() {
+            RestTestSupport sut = new RestTestSupport();
+            // Excel ファイルが存在しないクラスを設定する
+            setDummyDescription(RestTestSupportInstanceTest.class, sut);
+
+            // testDataParser を isResourceExisting が常に true を返す mock に差し替え
+            TestDataParser mockParser = mock(TestDataParser.class);
+            when(mockParser.isResourceExisting(any(), any())).thenReturn(true);
+
+            // dbSupport を spy に差し替え
+            final DbAccessTestSupport original = ReflectionUtil.getFieldValue(sut, "dbSupport");
+            final DbAccessTestSupport spy = mock(DbAccessTestSupport.class,
+                    withSettings().spiedInstance(original).defaultAnswer(RETURNS_DEFAULTS));
+            ReflectionUtil.setFieldValue(sut, "dbSupport", spy);
+
+            try (MockedStatic<SystemRepository> mocked = mockStatic(SystemRepository.class)) {
+                mocked.when(() -> SystemRepository.get("testDataParser")).thenReturn(mockParser);
+
+                sut.setUpDbIfSheetExists("setUpDb");
+            }
+
+            verify(spy).setUpDb("setUpDb");
         }
 
         /**
