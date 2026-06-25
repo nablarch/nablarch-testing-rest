@@ -31,6 +31,7 @@ import static org.mockito.Answers.RETURNS_DEFAULTS;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.withSettings;
 
@@ -43,7 +44,37 @@ public class RestTestSupportTest {
      * {@link RestTestSupport}を継承したクラスのテスト。
      */
     public static class RestTestSupportSubClassTest extends RestTestSupport {
-        
+
+        /**
+         * .xlsxファイルが存在しシートが見つかる場合、{@code setUpDb}が呼ばれることを確認する。
+         */
+        @Test
+        public void testSetUpDbIfSheetExists_XlsxFileSheetFound() {
+            final DbAccessTestSupport original = ReflectionUtil.getFieldValue(this, "dbSupport");
+            final DbAccessTestSupport spy = mock(DbAccessTestSupport.class,
+                    withSettings().spiedInstance(original).defaultAnswer(RETURNS_DEFAULTS));
+            ReflectionUtil.setFieldValue(this, "dbSupport", spy);
+
+            setUpDbIfSheetExists("setUpDb");
+
+            verify(spy).setUpDb("setUpDb");
+        }
+
+        /**
+         * .xlsxファイルが存在するがシートが存在しない場合、{@code setUpDb}が呼ばれないことを確認する。
+         */
+        @Test
+        public void testSetUpDbIfSheetExists_XlsxFileSheetNotFound() {
+            final DbAccessTestSupport original = ReflectionUtil.getFieldValue(this, "dbSupport");
+            final DbAccessTestSupport spy = mock(DbAccessTestSupport.class,
+                    withSettings().spiedInstance(original).defaultAnswer(RETURNS_DEFAULTS));
+            ReflectionUtil.setFieldValue(this, "dbSupport", spy);
+
+            setUpDbIfSheetExists("nonExistentSheet");
+
+            verify(spy, never()).setUpDb(any());
+        }
+
         /**
          * 存在しないリソース名を指定して{@link RestTestSupport#setUpDbIfSheetExists(String)}を呼び出した場合、例外が送出されないことを確認する。
          */
@@ -207,6 +238,60 @@ public class RestTestSupportTest {
                 sut.getTestDataParser();
             }
             fail("ここに到達したらExceptionが発生していない");
+        }
+
+        /**
+         * .xlsファイルが存在しシートが見つかる場合、{@code setUpDb}が呼ばれることを確認する。
+         */
+        @Test
+        public void testSetUpDbIfSheetExists_XlsFileSheetFound() {
+            RestTestSupport sut = new RestTestSupport();
+            setDummyDescription(RestTestSupport.class, sut);
+
+            final DbAccessTestSupport original = ReflectionUtil.getFieldValue(sut, "dbSupport");
+            final DbAccessTestSupport spy = mock(DbAccessTestSupport.class,
+                    withSettings().spiedInstance(original).defaultAnswer(RETURNS_DEFAULTS));
+            ReflectionUtil.setFieldValue(sut, "dbSupport", spy);
+
+            sut.setUpDbIfSheetExists("setUpDb");
+
+            verify(spy).setUpDb("setUpDb");
+        }
+
+        /**
+         * テストデータファイルが存在しない場合、{@code setUpDb}が呼ばれないことを確認する。
+         */
+        @Test
+        public void testSetUpDbIfSheetExists_NoFile() {
+            RestTestSupport sut = new RestTestSupport();
+            setDummyDescription(RestTestSupportInstanceTest.class, sut);
+
+            final DbAccessTestSupport original = ReflectionUtil.getFieldValue(sut, "dbSupport");
+            final DbAccessTestSupport spy = mock(DbAccessTestSupport.class,
+                    withSettings().spiedInstance(original).defaultAnswer(RETURNS_DEFAULTS));
+            ReflectionUtil.setFieldValue(sut, "dbSupport", spy);
+
+            sut.setUpDbIfSheetExists("setUpDb");
+
+            verify(spy, never()).setUpDb(any());
+        }
+
+        /**
+         * .xlsファイルが存在するがシートが存在しない場合、{@code setUpDb}が呼ばれないことを確認する。
+         */
+        @Test
+        public void testSetUpDbIfSheetExists_XlsFileSheetNotFound() {
+            RestTestSupport sut = new RestTestSupport();
+            setDummyDescription(RestTestSupport.class, sut);
+
+            final DbAccessTestSupport original = ReflectionUtil.getFieldValue(sut, "dbSupport");
+            final DbAccessTestSupport spy = mock(DbAccessTestSupport.class,
+                    withSettings().spiedInstance(original).defaultAnswer(RETURNS_DEFAULTS));
+            ReflectionUtil.setFieldValue(sut, "dbSupport", spy);
+
+            sut.setUpDbIfSheetExists("nonExistentSheet");
+
+            verify(spy, never()).setUpDb(any());
         }
 
         /**
