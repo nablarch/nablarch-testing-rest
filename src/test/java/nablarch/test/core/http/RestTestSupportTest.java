@@ -63,7 +63,9 @@ public class RestTestSupportTest {
         }
 
         /**
-         * .xlsxファイルが存在するがシートが存在しない場合、{@code setUpDb}が呼ばれないことを確認する。
+         * .xlsxファイルが存在するがシートが存在しない場合、{@code setUpDb}が呼ばれるが例外が送出されないことを確認する。
+         * ファイル単位で存在確認するため、シートが存在しなくても{@code setUpDb}は呼ばれる。
+         * {@code dbSupport.setUpDb()}はシートが存在しない場合、空リストを返して自然にスキップする。
          */
         @Test
         public void testSetUpDbIfSheetExists_XlsxFileSheetNotFound() {
@@ -74,7 +76,7 @@ public class RestTestSupportTest {
 
             setUpDbIfSheetExists("nonExistentSheet");
 
-            verify(spy, never()).setUpDb(any());
+            verify(spy).setUpDb("nonExistentSheet");
         }
 
         /**
@@ -271,7 +273,9 @@ public class RestTestSupportTest {
         }
 
         /**
-         * .xlsファイルが存在するがシートが存在しない場合、{@code setUpDb}が呼ばれないことを確認する。
+         * .xlsファイルが存在するがシートが存在しない場合、{@code setUpDb}が呼ばれるが例外が送出されないことを確認する。
+         * ファイル単位で存在確認するため、シートが存在しなくても{@code setUpDb}は呼ばれる。
+         * {@code dbSupport.setUpDb()}はシートが存在しない場合、空リストを返して自然にスキップする。
          */
         @Test
         public void testSetUpDbIfSheetExists_XlsFileSheetNotFound() {
@@ -285,7 +289,7 @@ public class RestTestSupportTest {
 
             sut.setUpDbIfSheetExists("nonExistentSheet");
 
-            verify(spy, never()).setUpDb(any());
+            verify(spy).setUpDb("nonExistentSheet");
         }
 
         /**
