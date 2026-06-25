@@ -68,7 +68,7 @@ public class RestTestSupportTest {
          * {@code dbSupport.setUpDb()}はシートが存在しない場合、空リストを返して自然にスキップする。
          */
         @Test
-        public void testSetUpDbIfSheetExists_XlsxFileSheetNotFound() {
+        public void testSetUpDbIfSheetExists_XlsxFileSheetNotFound_callsSetUpDb() {
             final DbAccessTestSupport original = ReflectionUtil.getFieldValue(this, "dbSupport");
             final DbAccessTestSupport spy = mock(DbAccessTestSupport.class,
                     withSettings().spiedInstance(original).defaultAnswer(RETURNS_DEFAULTS));
@@ -278,7 +278,7 @@ public class RestTestSupportTest {
          * {@code dbSupport.setUpDb()}はシートが存在しない場合、空リストを返して自然にスキップする。
          */
         @Test
-        public void testSetUpDbIfSheetExists_XlsFileSheetNotFound() {
+        public void testSetUpDbIfSheetExists_XlsFileSheetNotFound_callsSetUpDb() {
             RestTestSupport sut = new RestTestSupport();
             setDummyDescription(RestTestSupport.class, sut);
 
