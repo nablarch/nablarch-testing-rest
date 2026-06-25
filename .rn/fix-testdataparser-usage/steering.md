@@ -105,5 +105,9 @@
 
 # State
 
-<!-- updated by rn:up / rn:pause — do not edit manually -->
+- **Status**: paused
+- **Date**: 2026-06-25
+- **Last completed**: #2（testDataParser 差し替えの新テストを追加して RED を確認）
+- **Next**: #3 のユーザー承認を受けて完了マーカーを記録する
+- **Notes**: Task #3 の実装変更（getSheet() 除去・isResourceExisting() 一本化）は完了済み。commit `c2604a7`（実装）・`54d6108`（テスト名修正）・`6d81879`（check ファイル追加）がブランチに積まれている。`mvn clean install` も BUILD SUCCESS 済み（JAVA_HOME=/usr/lib/jvm/temurin-17-jdk-amd64 が必要）。PR #38: https://github.com/nablarch/nablarch-testing-rest/pull/38 でユーザーレビュー待ち。承認されたら Task #3 を steering.md でチェックオフして `test: complete task #3` コミットを作成し、Acceptance criteria の確認を提案する。
 
