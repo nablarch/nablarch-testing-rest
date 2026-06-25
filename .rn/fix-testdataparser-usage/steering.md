@@ -57,13 +57,13 @@
 
 **Steps**:
 
-- [ ] 「`testDataParser` を mock に差し替えると `isResourceExisting()` が呼ばれる」テストを `RestTestSupportTest` に追加する
-- [ ] `mvn test` を実行し、追加したテストが現状（変更前）で RED であることを確認する
-- [ ] self-check（各 Completion criteria を OK/NG で確認し `checks/task-2.md` に記録）
-- [ ] QA expert review（subagent）
-- [ ] language expert review（subagent）
-- [ ] software-engineering expert review（subagent）
-- [ ] user review
+- [x] 「`testDataParser` を mock に差し替えると `isResourceExisting()` が呼ばれる」テストを `RestTestSupportTest` に追加する
+- [x] `mvn test` を実行し、追加したテストが現状（変更前）で RED であることを確認する
+- [x] self-check（各 Completion criteria を OK/NG で確認し `checks/task-2.md` に記録）
+- [x] QA expert review（subagent）
+- [x] language expert review（subagent）
+- [x] software-engineering expert review（subagent）
+- [x] user review
 
 **Completion criteria**:
 
