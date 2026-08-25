@@ -1,3 +1,5 @@
+Rn version: 0.8.0
+
 # Goal
 
 `RestTestSupport` の `isExisting()` メソッドが、シートの存在確認に Apache POI で Excel を直接開く実装になっており、SystemRepository に登録された `testDataParser`（例: `YamlTestDataParser`）が差し替えられても使われない問題を修正する。
@@ -78,14 +80,14 @@
 
 **Steps**:
 
-- [ ] `isExisting()` 内の `getSheet(path, sheetName) != null` を除去し、`getPathOf()` の結果が null でなければ存在するとみなすよう変更する
-- [ ] `getSheet()` メソッド自体を削除する
-- [ ] Apache POI (`WorkbookFactory`, `Workbook`, `Sheet`) の不要になった import を削除する
-- [ ] `mvn test` を実行し、全テスト（#1 リグレッション・#2 新テスト・既存テスト）が GREEN であることを確認する
-- [ ] self-check（各 Completion criteria を OK/NG で確認し `checks/task-3.md` に記録）
+- [x] `isExisting()` 内の `getSheet(path, sheetName) != null` を除去し、`getPathOf()` の結果が null でなければ存在するとみなすよう変更する
+- [x] `getSheet()` メソッド自体を削除する
+- [x] Apache POI (`WorkbookFactory`, `Workbook`, `Sheet`) の不要になった import を削除する
+- [x] `mvn test` を実行し、全テスト（#1 リグレッション・#2 新テスト・既存テスト）が GREEN であることを確認する
+- [x] self-check（各 Completion criteria を OK/NG で確認し `checks/task-3.md` に記録）
 - [ ] QA expert review（subagent）
-- [ ] language expert review（subagent）
-- [ ] software-engineering expert review（subagent）
+- [ ] Craft expert review（subagent）
+- [ ] Verification expert review（subagent）
 - [ ] user review
 
 **Completion criteria**:
@@ -106,8 +108,8 @@
 # State
 
 - **Status**: paused
-- **Date**: 2026-06-25
+- **Date**: 2026-08-25
 - **Last completed**: #2（testDataParser 差し替えの新テストを追加して RED を確認）
-- **Next**: Task #3 のユーザー承認を受けて完了マーカーを記録する
-- **Notes**: Task #3 の実装変更（getSheet() 除去・isResourceExisting() 一本化）は完了済み。commit `c2604a7`（実装）・`54d6108`（テスト名修正）・`6d81879`（check ファイル追加）がブランチに積まれている。`mvn clean install` も BUILD SUCCESS 済み（JAVA_HOME=/usr/lib/jvm/temurin-17-jdk-amd64 が必要）。PR #38: https://github.com/nablarch/nablarch-testing-rest/pull/38 のタイトル・本文を更新済み（今セッション）。ユーザーレビュー待ち。承認されたら Task #3 を steering.md でチェックオフして `test: complete task #3` コミットを作成し、Acceptance criteria の確認を提案する。
+- **Next**: Task #3 の QA/Craft/Verification expert review（未実施）とユーザー承認を経て完了マーカーを記録する
+- **Notes**: Task #3 の実装・self-check は完了済み（`checks/task-3.md`）。`checks/task-3.md` の QA/Craft/Verification 各 Verdict は未記入 — 実施したうえで埋めること。PR #38: https://github.com/nablarch/nablarch-testing-rest/pull/38 は本文を拡充済み（前提セクションに `isDataExisting()` 二重防御の説明と `.rn/fix-testdataparser-usage/handoff-to-docs.md` へのリンクを追加）。ユーザーレビュー待ち。承認されたら Task #3 を steering.md でチェックオフして `test: complete task #3` コミットを作成し、Acceptance criteria の確認を提案する。未解決の残骸: `jacoco.exec`（リポジトリルート）と `.claude/worktrees/agent-ad7914f14c66d83cd/`（サブエージェント由来の孤立worktree）の discard 可否をユーザーに確認中。
 
