@@ -107,9 +107,12 @@ Rn version: 0.8.0
 
 # State
 
-- **Status**: paused
-- **Date**: 2026-08-25
-- **Last completed**: #2（testDataParser 差し替えの新テストを追加して RED を確認）
-- **Next**: Task #3 の QA/Craft/Verification expert review（未実施）とユーザー承認を経て完了マーカーを記録する
-- **Notes**: Task #3 の実装・self-check は完了済み（`checks/task-3.md`）。`checks/task-3.md` の QA/Craft/Verification 各 Verdict は未記入 — 実施したうえで埋めること。PR #38: https://github.com/nablarch/nablarch-testing-rest/pull/38 は本文を拡充済み（前提セクションに `isDataExisting()` 二重防御の説明と `.rn/fix-testdataparser-usage/handoff-to-docs.md` へのリンクを追加）。ユーザーレビュー待ち。承認されたら Task #3 を steering.md でチェックオフして `test: complete task #3` コミットを作成し、Acceptance criteria の確認を提案する。未解決の残骸: `jacoco.exec`（リポジトリルート）と `.claude/worktrees/agent-ad7914f14c66d83cd/`（サブエージェント由来の孤立worktree）の discard 可否をユーザーに確認中。
+(written by /rn:dn, read and reset to this placeholder by /rn:up. `Status` is `paused` while a
+session is suspended — the signal /rn:up and /rn:dn search for — and resets to `not suspended` here,
+so only a genuinely suspended session reads `paused`.)
 
+- **Status**: not suspended
+- **Date**: YYYY-MM-DD
+- **Last completed**: #N description
+- **Next**: #N description
+- **Notes**: bounded forward pointer — branch/PR, next concrete action, open blockers, user-deferred paths, open questions / pending decisions not yet captured in `design.md`; not a re-narration of the session (that lives in `git log`)
