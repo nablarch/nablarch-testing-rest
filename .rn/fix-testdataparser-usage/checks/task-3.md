@@ -54,6 +54,45 @@
 
 これは Acceptance criteria「SystemRepository に `YamlTestDataParser` を登録した場合、Excel ファイルではなく YAML ファイルが読み込まれる」に直接抵触する。ラッチの除去は D-1 の前提（ファイル単位確認で十分）を変更するため、ユーザー判断を仰ぐ。
 
+なお、ラッチ自体は `c2604a7` より前から存在しており、本変更が作ったものではない（`git show c2604a7` の差分は `isExisting()` 末尾1行の置換と `getSheet()` の削除のみ）。
+
+### E-1 判断材料: ラッチ除去が Excel 経路に与える影響（実測済み）
+
+判断の前提として「ラッチを外すと Excel 経路の挙動が変わるか」を実測した。**変わらない。**
+
+測定方法: `git archive HEAD` で隔離コピーを2つ作成（A = HEAD のまま / B = `testDataExists` フィールドとラッチを除去し `return getPathOf(getResourceName(sheetName)) != null;` に置換）。実リポジトリの `src/` は未変更。プローブは隔離コピー上にのみ配置し、フルスイート実行前に削除した。
+
+挙動（`setUpDb()` の2回呼び出しで `dbSupport.setUpDb()` に到達したシート名）:
+
+| ケース | A（ラッチあり） | B（ラッチなし） |
+|---|---|---|
+| Excel ファイルあり（`RestTestSupport.xls`、メソッド名 `dummy`） | `setUpDb(setUpDb)` `setUpDb(dummy)` | 同一 |
+| Excel ファイルなし（`NoDataClass`） | 呼び出しなし | 同一 |
+
+フルスイート: A・B とも `Tests run: 77, Failures: 0, Errors: 0, Skipped: 0` / `BUILD SUCCESS`。surefire のテストクラス別結果の diff は実行時間のみで件数は完全一致。
+
+理由（粒度を直接測定、parser は `nablarch.test.core.reader.BasicTestDataParser`）:
+
+```
+isResourceExisting(RestTestSupport/setUpDb)          = true
+isResourceExisting(RestTestSupport/dummy)            = true
+isResourceExisting(RestTestSupport/nonExistentSheet) = true   ← シート名を見ていない
+isResourceExisting(NoDataClass/setUpDb)              = false
+```
+
+同一クラスならシート名によらず常に同じ値を返す＝ファイル単位。よって2回の呼び出しは必ず一致し、ラッチが結果を変える余地がない。
+
+唯一の差は parser 呼び出し回数:
+
+| ケース | A（ラッチあり） | B（ラッチなし） |
+|---|---|---|
+| ファイルあり | 2回 | 2回 |
+| ファイルなし | 1回 | 2回 |
+
+`PoiXlsReader.isResourceExisting`（sources jar `:232-252`）の `prevResourceName` キャッシュはヒット時にのみ更新される（`:247`）ため、ミス時の2回目は `dir.listFiles()` を再実行する。テストメソッドあたり1回の追加ディレクトリ走査で、データファイルを持たないクラスに限られる。
+
+副次的に確認: `getSetupTableData("...", "RestTestSupport/nonExistentSheet").size() = 0` — Excel 経路でシートが存在しない場合に空リストが返ることを実測で確認した（D-1 の Evidence はこれまでコードリーディングのみだった）。
+
 ## Overall Verdict
 
 - Self-check: OK

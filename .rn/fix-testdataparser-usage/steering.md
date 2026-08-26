@@ -107,12 +107,8 @@ Rn version: 0.8.0
 
 # State
 
-(written by /rn:dn, read and reset to this placeholder by /rn:up. `Status` is `paused` while a
-session is suspended — the signal /rn:up and /rn:dn search for — and resets to `not suspended` here,
-so only a genuinely suspended session reads `paused`.)
-
-- **Status**: not suspended
-- **Date**: YYYY-MM-DD
-- **Last completed**: #N description
-- **Next**: #N description
-- **Notes**: bounded forward pointer — branch/PR, next concrete action, open blockers, user-deferred paths, open questions / pending decisions not yet captured in `design.md`; not a re-narration of the session (that lives in `git log`)
+- **Status**: paused
+- **Date**: 2026-08-26
+- **Last completed**: #2（testDataParser 差し替えの新テストを追加して RED を確認）
+- **Next**: Task #3 の Verify — E-1 のユーザー判断を受けてから修正ラウンドを実施し、QA/Craft/Verification を再実行する
+- **Notes**: PR #38: https://github.com/nablarch/nablarch-testing-rest/pull/38。**ユーザー判断待ち（E-1）**: `testDataExists` ラッチをどうするか — (a) 削除 / (b) リソース名単位のキャッシュ化 / (c) 本タスク範囲外として別件化。判断が出るまで `src/main` を変更しないこと。判断が出たら修正ラウンド → QA/Craft/Verification 再実行 → #3 チェックオフの順。Task #3 の実装・self-check は完了済みだが、3エキスパートとも NG 判定のためレビュー4ステップは未チェックのまま。**指摘・判定・E-1 の判断材料（ラッチ除去が Excel 経路に影響しないことの実測結果を含む）はすべて `checks/task-3.md` に記録済み — 再開時はまずこれを読むこと。** 修正対象として確定している項目も同ファイルに記載（テスト名の逆転、parser が false を返す方向のテスト欠落、陳腐化した POI テスト、Javadoc の不正確さ、D-1 の Evidence 不足）。
