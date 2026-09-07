@@ -6,6 +6,7 @@ import nablarch.fw.web.HttpResponse;
 import nablarch.test.RepositoryInitializer;
 import nablarch.test.TestSupport;
 import nablarch.test.core.db.DbAccessTestSupport;
+import nablarch.test.core.reader.TestDataParser;
 import nablarch.test.core.rule.TestDescription;
 import nablarch.test.support.reflection.ReflectionUtil;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
@@ -31,7 +32,9 @@ import static org.mockito.Answers.RETURNS_DEFAULTS;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.withSettings;
 
 /**
@@ -43,7 +46,39 @@ public class RestTestSupportTest {
      * {@link RestTestSupport}を継承したクラスのテスト。
      */
     public static class RestTestSupportSubClassTest extends RestTestSupport {
-        
+
+        /**
+         * .xlsxファイルが存在しシートが見つかる場合、{@code setUpDb}が呼ばれることを確認する。
+         */
+        @Test
+        public void testSetUpDbIfSheetExists_XlsxFileSheetFound() {
+            final DbAccessTestSupport original = ReflectionUtil.getFieldValue(this, "dbSupport");
+            final DbAccessTestSupport spy = mock(DbAccessTestSupport.class,
+                    withSettings().spiedInstance(original).defaultAnswer(RETURNS_DEFAULTS));
+            ReflectionUtil.setFieldValue(this, "dbSupport", spy);
+
+            setUpDbIfSheetExists("setUpDb");
+
+            verify(spy).setUpDb("setUpDb");
+        }
+
+        /**
+         * .xlsxファイルが存在するがシートが存在しない場合、{@code setUpDb}が呼ばれるが例外が送出されないことを確認する。
+         * ファイル単位で存在確認するため、シートが存在しなくても{@code setUpDb}は呼ばれる。
+         * {@code dbSupport.setUpDb()}はシートが存在しない場合、空リストを返して自然にスキップする。
+         */
+        @Test
+        public void testSetUpDbIfSheetExists_XlsxFileSheetNotFound_callsSetUpDb() {
+            final DbAccessTestSupport original = ReflectionUtil.getFieldValue(this, "dbSupport");
+            final DbAccessTestSupport spy = mock(DbAccessTestSupport.class,
+                    withSettings().spiedInstance(original).defaultAnswer(RETURNS_DEFAULTS));
+            ReflectionUtil.setFieldValue(this, "dbSupport", spy);
+
+            setUpDbIfSheetExists("nonExistentSheet");
+
+            verify(spy).setUpDb("nonExistentSheet");
+        }
+
         /**
          * {@link DbAccessTestSupport}への委譲メソッドを確認する。
          */
@@ -199,6 +234,90 @@ public class RestTestSupportTest {
                 sut.getTestDataParser();
             }
             fail("ここに到達したらExceptionが発生していない");
+        }
+
+        /**
+         * .xlsファイルが存在しシートが見つかる場合、{@code setUpDb}が呼ばれることを確認する。
+         */
+        @Test
+        public void testSetUpDbIfSheetExists_XlsFileSheetFound() {
+            RestTestSupport sut = new RestTestSupport();
+            setDummyDescription(RestTestSupport.class, sut);
+
+            final DbAccessTestSupport original = ReflectionUtil.getFieldValue(sut, "dbSupport");
+            final DbAccessTestSupport spy = mock(DbAccessTestSupport.class,
+                    withSettings().spiedInstance(original).defaultAnswer(RETURNS_DEFAULTS));
+            ReflectionUtil.setFieldValue(sut, "dbSupport", spy);
+
+            sut.setUpDbIfSheetExists("setUpDb");
+
+            verify(spy).setUpDb("setUpDb");
+        }
+
+        /**
+         * テストデータファイルが存在しない場合、{@code setUpDb}が呼ばれないことを確認する。
+         */
+        @Test
+        public void testSetUpDbIfSheetExists_NoFile() {
+            RestTestSupport sut = new RestTestSupport();
+            setDummyDescription(RestTestSupportInstanceTest.class, sut);
+
+            final DbAccessTestSupport original = ReflectionUtil.getFieldValue(sut, "dbSupport");
+            final DbAccessTestSupport spy = mock(DbAccessTestSupport.class,
+                    withSettings().spiedInstance(original).defaultAnswer(RETURNS_DEFAULTS));
+            ReflectionUtil.setFieldValue(sut, "dbSupport", spy);
+
+            sut.setUpDbIfSheetExists("setUpDb");
+
+            verify(spy, never()).setUpDb(any());
+        }
+
+        /**
+         * .xlsファイルが存在するがシートが存在しない場合、{@code setUpDb}が呼ばれるが例外が送出されないことを確認する。
+         * ファイル単位で存在確認するため、シートが存在しなくても{@code setUpDb}は呼ばれる。
+         * {@code dbSupport.setUpDb()}はシートが存在しない場合、空リストを返して自然にスキップする。
+         */
+        @Test
+        public void testSetUpDbIfSheetExists_XlsFileSheetNotFound_callsSetUpDb() {
+            RestTestSupport sut = new RestTestSupport();
+            setDummyDescription(RestTestSupport.class, sut);
+
+            final DbAccessTestSupport original = ReflectionUtil.getFieldValue(sut, "dbSupport");
+            final DbAccessTestSupport spy = mock(DbAccessTestSupport.class,
+                    withSettings().spiedInstance(original).defaultAnswer(RETURNS_DEFAULTS));
+            ReflectionUtil.setFieldValue(sut, "dbSupport", spy);
+
+            sut.setUpDbIfSheetExists("nonExistentSheet");
+
+            verify(spy).setUpDb("nonExistentSheet");
+        }
+
+        /**
+         * {@code testDataParser} を差し替えた場合に {@code isResourceExisting()} の結果が尊重され {@code setUpDb} が呼ばれることを確認する。
+         */
+        @Test
+        public void testSetUpDbIfSheetExists_testDataParserReturnsNotExisting() {
+            RestTestSupport sut = new RestTestSupport();
+            // Excel ファイルが存在しないクラスを設定する
+            setDummyDescription(RestTestSupportInstanceTest.class, sut);
+
+            // testDataParser を isResourceExisting が常に true を返す mock に差し替え
+            TestDataParser mockParser = mock(TestDataParser.class);
+            when(mockParser.isResourceExisting(any(), any())).thenReturn(true);
+
+            // dbSupport を spy に差し替え
+            final DbAccessTestSupport original = ReflectionUtil.getFieldValue(sut, "dbSupport");
+            final DbAccessTestSupport spy = mock(DbAccessTestSupport.class,
+                    withSettings().spiedInstance(original).defaultAnswer(RETURNS_DEFAULTS));
+            ReflectionUtil.setFieldValue(sut, "dbSupport", spy);
+
+            try (MockedStatic<SystemRepository> mocked = mockStatic(SystemRepository.class)) {
+                mocked.when(() -> SystemRepository.get("testDataParser")).thenReturn(mockParser);
+
+                sut.setUpDbIfSheetExists("setUpDb");
+            }
+
+            verify(spy).setUpDb("setUpDb");
         }
 
         /**
