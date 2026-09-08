@@ -101,3 +101,35 @@ isResourceExisting(NoDataClass/setUpDb)              = false
 - Craft expert: NG
 - Verification expert: NG
 - Ready to check off: No（E-1 のユーザー判断待ち。判断後に修正ラウンドを実施し、各エキスパートを再実行する）
+
+## 修正ラウンド（2026-09-08、ディレクター直接実施）
+
+E-1 の決着: yaml 側 `#27`（`nablarch-testing-yaml@d09566e` `YamlLoader.java:201-202`）で `isResourceExisting` が入れ物（`<basePath>/<クラス名>` ディレクトリ）単位になり、`setUpDb.yaml` が無いクラスでもラッチは落ちない。`getSetupTableData`（`YamlTestDataParser.java:126`）は読み込み単位が無ければ空リストを返す。rest の `src/main` は振る舞いを変えない（リリース済みモジュールの方針）。E-1 の選択肢では (c) に相当し、yaml 側で解決した。
+
+着手前ベースライン: `JAVA_HOME=/usr/lib/jvm/temurin-17-jdk-amd64 mvn -o clean test` → `Tests run: 77, Failures: 0, Errors: 0, Skipped: 0`。
+
+変更（src/test と Javadoc のみ。`git diff src/main` は Javadoc 2 箇所 +7/−2 で実行文の変更なし）:
+
+1. テスト名の逆転を是正: `testSetUpDbIfSheetExists_testDataParserReturnsNotExisting` → `..._testDataParserReturnsExisting_callsSetUpDb`（実体は parser が true を返し `setUpDb` が呼ばれることの検証）。Excel ファイルが無いことを `assertFalse(File.exists)` で Given に置いた
+2. parser が false を返す方向のテストを追加: `testSetUpDbIfSheetExists_testDataParserReturnsNotExisting_skipsSetUpDb`。`RestTestSupport.xls` がディスク上に実在することを Given で確認したうえで、mock parser が false を返せば `setUpDb` が呼ばれないことを検証する
+3. ラッチのテストを追加: `testSetUpDbIfSheetExists_onceNotExisting_doesNotAskParserAgain`。2 シート連続で呼んでも parser への問い合わせが 1 回で `setUpDb` は呼ばれないこと。Javadoc に「判定単位は parser の実装に委ねられる（Excel はファイル単位、YAML はディレクトリ単位）」を明記
+4. 陳腐化した POI 直叩きテスト `testSetUp_WorkbookFactoryThrowsException` を削除。期待していた `"test data file open failed."` は `src/` に 0 件（`grep -rn`）。POI の import も削除
+5. `RestTestSupport.java` の Javadoc 2 箇所（`testDataExists` フィールド・`isExisting()`）を実体に合わせた
+
+実測で分かったこと: `SystemRepository` を `mockStatic` すると `nablarch.test.resource-root` が null になり既定値 `test/java/` に落ちる（実効値は `src/test/java`。プローブで実測）。この状態では「parser の false を無視してディスク上のファイルで判定する」変異が生き残った（stub 無しで実測、17 件全緑）。そのため 3 テストで `nablarch.test.resource-root` を `src/test/java` に stub した。
+
+変異確認（`src/main` を一時的に壊し、確認後に復元。`git diff src/main` は Javadoc のみに戻っている）:
+
+| 変異 | 結果 |
+|---|---|
+| M1: parser が全 basePath で false でも、ディスク上に `<クラス名>.xls/.xlsx` があれば basePath を返す | `..._skipsSetUpDb:345`・`..._doesNotAskParserAgain:378` の 2 件が落ちる |
+| M2: `testDataExists` ラッチを除去 | `..._doesNotAskParserAgain:378` の 1 件が落ちる |
+
+修正後: `mvn -o clean test` → `Tests run: 78, Failures: 0, Errors: 0, Skipped: 0` / `BUILD SUCCESS`（77 − 削除 1 + 追加 2）。
+
+レビュー（差分限定 2 観点、サブエージェント 1 本。範囲／新しい欠陥）: 是正必須なし、軽微 3 件。
+- 軽微 1「resource-root の stub は結果に効いていない（3 行消しても全緑）」→ **却下**。上記 M1 は stub 無しでは生き残る（実測）。レビュアーの変異（`true ||`）はファイルに依存しないため差が出なかっただけ
+- 軽微 2「1 のテストにファイル不在の担保が無い」→ 採用（`assertFalse` を追加）
+- 軽微 3「`times(1)` は resource-root が単一パスであることに依存」→ 採用（stub を固定値 `src/test/java` にして設定非依存にした）
+
+D-1 の Evidence 補強: 本ファイル §Coordinator Review の実測「`getSetupTableData("...", "RestTestSupport/nonExistentSheet").size() = 0`」を steering の D-1 に転記した。

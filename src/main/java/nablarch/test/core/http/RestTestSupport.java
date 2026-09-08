@@ -203,11 +203,16 @@ public class RestTestSupport extends SimpleRestTestSupport {
         dbSupport.assertTableEquals(message, sheetName, groupId, failIfNoDataFound);
     }
 
-    /** テストデータのExcelファイルが存在するか否か */
+    /**
+     * テストデータのリソースが存在するか否か。
+     * 一度存在しないと判定したら、以降は {@code testDataParser} に問い合わせず存在しないとみなす。
+     */
     private boolean testDataExists = true;
 
     /**
-     * sheetName に合致するリソースが存在するかを判定する。
+     * sheetName から組み立てたリソース名（テストクラスの単純名/sheetName）が存在するかを判定する。
+     * 存在の判定は {@code testDataParser} の {@code isResourceExisting()} に委ねる。
+     * 判定単位（ファイル単位かシート単位か）は {@code testDataParser} の実装に依存する。
      *
      * @param sheetName シート名
      * @return 存在する場合true

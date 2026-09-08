@@ -9,8 +9,6 @@ import nablarch.test.core.db.DbAccessTestSupport;
 import nablarch.test.core.reader.TestDataParser;
 import nablarch.test.core.rule.TestDescription;
 import nablarch.test.support.reflection.ReflectionUtil;
-import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
-import org.apache.poi.ss.usermodel.WorkbookFactory;
 import org.junit.After;
 import org.junit.Rule;
 import org.junit.Test;
@@ -20,19 +18,22 @@ import org.junit.runner.Description;
 import org.junit.runner.RunWith;
 import org.mockito.MockedStatic;
 
-import java.io.IOException;
+import java.io.File;
 import java.io.InputStream;
 import java.lang.annotation.Annotation;
 import java.nio.charset.Charset;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.mockito.Answers.RETURNS_DEFAULTS;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.withSettings;
@@ -120,6 +121,9 @@ public class RestTestSupportTest {
      * {@link RestTestSupport}単体でのテスト
      */
     public static class RestTestSupportInstanceTest {
+        /** テストデータの実際の場所（{@code nablarch.test.resource-root} を stub するときに使う） */
+        private static final String RESOURCE_ROOT = "src/test/java";
+
         @Rule
         public ExpectedException expectedException = ExpectedException.none();
 
@@ -204,23 +208,6 @@ public class RestTestSupportTest {
         }
 
         /**
-         * {@link WorkbookFactory}が例外を送出した場合、{@link RuntimeException}が送出されることを確認する。
-         */
-        @Test
-        public void testSetUp_WorkbookFactoryThrowsException() throws IOException, InvalidFormatException {
-            expectedException.expect(RuntimeException.class);
-            expectedException.expectMessage("test data file open failed.");
-            RestTestSupport sut = new RestTestSupport();
-            setDummyDescription(RestTestSupport.class, sut);
-            try (final MockedStatic<WorkbookFactory> mocked = mockStatic(WorkbookFactory.class)) {
-                mocked.when(() -> WorkbookFactory.create(any(InputStream.class)))
-                        .thenThrow(new IOException("cannot create."));
-                sut.setUpDb();
-            }
-            fail("ここに到達したらExceptionが発生していない");
-        }
-
-        /**
          * SystemRepositoryに{@link nablarch.test.core.reader.TestDataParser}が登録されていない場合、例外が送出されることを確認する。
          */
         @Test
@@ -293,13 +280,16 @@ public class RestTestSupportTest {
         }
 
         /**
-         * {@code testDataParser} を差し替えた場合に {@code isResourceExisting()} の結果が尊重され {@code setUpDb} が呼ばれることを確認する。
+         * Excel ファイルが存在しないクラスでも、差し替えた {@code testDataParser} の
+         * {@code isResourceExisting()} が true を返せば {@code setUpDb} が呼ばれることを確認する。
          */
         @Test
-        public void testSetUpDbIfSheetExists_testDataParserReturnsNotExisting() {
+        public void testSetUpDbIfSheetExists_testDataParserReturnsExisting_callsSetUpDb() {
             RestTestSupport sut = new RestTestSupport();
             // Excel ファイルが存在しないクラスを設定する
             setDummyDescription(RestTestSupportInstanceTest.class, sut);
+            assertFalse(new File(RESOURCE_ROOT, "nablarch/test/core/http/RestTestSupportInstanceTest.xls").exists());
+            assertFalse(new File(RESOURCE_ROOT, "nablarch/test/core/http/RestTestSupportInstanceTest.xlsx").exists());
 
             // testDataParser を isResourceExisting が常に true を返す mock に差し替え
             TestDataParser mockParser = mock(TestDataParser.class);
@@ -311,13 +301,82 @@ public class RestTestSupportTest {
                     withSettings().spiedInstance(original).defaultAnswer(RETURNS_DEFAULTS));
             ReflectionUtil.setFieldValue(sut, "dbSupport", spy);
 
+            // SystemRepository をモック化するとリソースルート設定が失われ既定値（test/java/）に落ちるため、
+            // テストデータの実際の場所を単一パスで stub する（ディスク上のファイルの有無で判定する退行を検知できるようにする）
             try (MockedStatic<SystemRepository> mocked = mockStatic(SystemRepository.class)) {
+                mocked.when(() -> SystemRepository.get("nablarch.test.resource-root")).thenReturn(RESOURCE_ROOT);
                 mocked.when(() -> SystemRepository.get("testDataParser")).thenReturn(mockParser);
 
                 sut.setUpDbIfSheetExists("setUpDb");
             }
 
             verify(spy).setUpDb("setUpDb");
+        }
+
+        /**
+         * Excel ファイルが存在するクラスでも、差し替えた {@code testDataParser} の
+         * {@code isResourceExisting()} が false を返せば {@code setUpDb} が呼ばれないことを確認する。
+         * ディスク上のファイルの有無ではなく、{@code testDataParser} の判定だけで決まる。
+         */
+        @Test
+        public void testSetUpDbIfSheetExists_testDataParserReturnsNotExisting_skipsSetUpDb() {
+            RestTestSupport sut = new RestTestSupport();
+            // Excel ファイル（RestTestSupport.xls）が存在するクラスを設定する
+            setDummyDescription(RestTestSupport.class, sut);
+            assertTrue(new File(RESOURCE_ROOT, "nablarch/test/core/http/RestTestSupport.xls").isFile());
+
+            TestDataParser mockParser = mock(TestDataParser.class);
+            when(mockParser.isResourceExisting(any(), any())).thenReturn(false);
+
+            final DbAccessTestSupport original = ReflectionUtil.getFieldValue(sut, "dbSupport");
+            final DbAccessTestSupport spy = mock(DbAccessTestSupport.class,
+                    withSettings().spiedInstance(original).defaultAnswer(RETURNS_DEFAULTS));
+            ReflectionUtil.setFieldValue(sut, "dbSupport", spy);
+
+            // SystemRepository をモック化するとリソースルート設定が失われ既定値（test/java/）に落ちるため、
+            // テストデータの実際の場所を単一パスで stub する（ディスク上のファイルの有無で判定する退行を検知できるようにする）
+            try (MockedStatic<SystemRepository> mocked = mockStatic(SystemRepository.class)) {
+                mocked.when(() -> SystemRepository.get("nablarch.test.resource-root")).thenReturn(RESOURCE_ROOT);
+                mocked.when(() -> SystemRepository.get("testDataParser")).thenReturn(mockParser);
+
+                sut.setUpDbIfSheetExists("setUpDb");
+            }
+
+            verify(spy, never()).setUpDb(any());
+        }
+
+        /**
+         * 一度 {@code isResourceExisting()} が false を返すと、以降のシートでは
+         * {@code testDataParser} に問い合わせず {@code setUpDb} も呼ばれないことを確認する。
+         * {@code isResourceExisting()} の判定単位は {@code testDataParser} の実装に委ねられる
+         * （Excel 形式はファイル単位、YAML 形式はディレクトリ単位）ため、この振る舞いは
+         * 「1 つ目のシートが無いだけで 2 つ目が読まれない」ことを意味しない。
+         */
+        @Test
+        public void testSetUpDbIfSheetExists_onceNotExisting_doesNotAskParserAgain() {
+            RestTestSupport sut = new RestTestSupport();
+            setDummyDescription(RestTestSupport.class, sut);
+
+            TestDataParser mockParser = mock(TestDataParser.class);
+            when(mockParser.isResourceExisting(any(), any())).thenReturn(false);
+
+            final DbAccessTestSupport original = ReflectionUtil.getFieldValue(sut, "dbSupport");
+            final DbAccessTestSupport spy = mock(DbAccessTestSupport.class,
+                    withSettings().spiedInstance(original).defaultAnswer(RETURNS_DEFAULTS));
+            ReflectionUtil.setFieldValue(sut, "dbSupport", spy);
+
+            // SystemRepository をモック化するとリソースルート設定が失われ既定値（test/java/）に落ちるため、
+            // テストデータの実際の場所を単一パスで stub する（ディスク上のファイルの有無で判定する退行を検知できるようにする）
+            try (MockedStatic<SystemRepository> mocked = mockStatic(SystemRepository.class)) {
+                mocked.when(() -> SystemRepository.get("nablarch.test.resource-root")).thenReturn(RESOURCE_ROOT);
+                mocked.when(() -> SystemRepository.get("testDataParser")).thenReturn(mockParser);
+
+                sut.setUpDbIfSheetExists("setUpDb");
+                sut.setUpDbIfSheetExists("dummy");
+            }
+
+            verify(mockParser, times(1)).isResourceExisting(any(), any());
+            verify(spy, never()).setUpDb(any());
         }
 
         /**
