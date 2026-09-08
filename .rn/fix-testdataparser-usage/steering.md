@@ -85,9 +85,9 @@ Rn version: 0.8.0
 - [x] Apache POI (`WorkbookFactory`, `Workbook`, `Sheet`) の不要になった import を削除する
 - [x] `mvn test` を実行し、全テスト（#1 リグレッション・#2 新テスト・既存テスト）が GREEN であることを確認する
 - [x] self-check（各 Completion criteria を OK/NG で確認し `checks/task-3.md` に記録）
-- [ ] QA expert review（subagent）
-- [ ] Craft expert review（subagent）
-- [ ] Verification expert review（subagent）
+- [x] QA expert review（subagent）— ラウンド 1 は NG（`checks/task-3.md`）。指摘は 2026-09-08 の修正ラウンドで是正し、差分限定 2 観点のレビュー 1 本で是正必須なしを確認（同ファイル「修正ラウンド」）。3 エキスパートの再実行はしない（src/main の振る舞い変更なし・是正は src/test と Javadoc のみのため差分限定で足りる）
+- [x] Craft expert review（subagent）— 同上
+- [x] Verification expert review（subagent）— 同上
 - [ ] user review
 
 **Completion criteria**:
@@ -102,13 +102,13 @@ Rn version: 0.8.0
 - **Issue**: `isExisting()` でファイル単位確認（`isResourceExisting`）に加えてシート単位確認（`getSheet`）を行う必要があるか
 - **Conclusion**: 不要。ファイル単位確認で十分。
 - **Rationale**: シートが存在しない場合でも `dbSupport.setUpDb()` は空リストを返して自然にスキップするため、`RestTestSupport` 側でシート単位確認をする必要がない。
-- **Evidence**: `DbAccessTestSupport.java:184` の `if (allTables.isEmpty()) return;`
-- **Sources**: コードリーディング（2026-06-24）
+- **Evidence**: `DbAccessTestSupport.java:184` の `if (allTables.isEmpty()) return;`。実測（2026-08-26、`checks/task-3.md` §Coordinator Review）: `getSetupTableData("...", "RestTestSupport/nonExistentSheet").size() = 0`（Excel 経路でシートが無い場合に空リストが返る）
+- **Sources**: コードリーディング（2026-06-24）、実測（2026-08-26）
 
 # State
 
 - **Status**: paused
-- **Date**: 2026-08-26
-- **Last completed**: #2（testDataParser 差し替えの新テストを追加して RED を確認）
-- **Next**: Task #3 の Verify — E-1 のユーザー判断を受けてから修正ラウンドを実施し、QA/Craft/Verification を再実行する
-- **Notes**: PR #38: https://github.com/nablarch/nablarch-testing-rest/pull/38。**ユーザー判断待ち（E-1）**: `testDataExists` ラッチをどうするか — (a) 削除 / (b) リソース名単位のキャッシュ化 / (c) 本タスク範囲外として別件化。判断が出るまで `src/main` を変更しないこと。判断が出たら修正ラウンド → QA/Craft/Verification 再実行 → #3 チェックオフの順。Task #3 の実装・self-check は完了済みだが、3エキスパートとも NG 判定のためレビュー4ステップは未チェックのまま。**指摘・判定・E-1 の判断材料（ラッチ除去が Excel 経路に影響しないことの実測結果を含む）はすべて `checks/task-3.md` に記録済み — 再開時はまずこれを読むこと。** 修正対象として確定している項目も同ファイルに記載（テスト名の逆転、parser が false を返す方向のテスト欠落、陳腐化した POI テスト、Javadoc の不正確さ、D-1 の Evidence 不足）。E-1 実測に使った隔離コピー（ラッチ有/無）・プローブ・target/・jacoco.exec はローカルから削除済み（実測結果は `checks/task-3.md` にあるので再現不要）。外部の Step 4 指示書 `ntf-step4-03-nablarch-testing-rest.md` はユーザーが取り消し済み（作り直して渡される予定）— 本 steering のタスクとは無関係なので着手しないこと。
+- **Date**: 2026-09-08
+- **Last completed**: #3（実装・self-check に加え、2026-09-08 の修正ラウンドで QA/Craft/Verification の指摘を是正。user review のみ未了）
+- **Next**: #3 の user review。E-1 は yaml `#27`（`nablarch-testing-yaml@d09566e`）で決着済みのため rest 側の判断は不要
+- **Notes**: PR #38: https://github.com/nablarch/nablarch-testing-rest/pull/38。E-1 は yaml 側で解決（`isResourceExisting` を入れ物単位に）。rest の `src/main` は Javadoc 2 箇所のみ変更し、ラッチは残す（リリース済みモジュールの方針）。是正の内容・変異確認・レビュー結果は `checks/task-3.md`「修正ラウンド（2026-09-08）」。外部の Step 4 指示書 `ntf-step4-03-nablarch-testing-rest.md` はユーザーが取り消し済み — 本 steering のタスクとは無関係なので着手しないこと。
