@@ -9,12 +9,8 @@ import nablarch.core.util.annotation.Published;
 import nablarch.fw.web.HttpResponse;
 import nablarch.test.core.db.DbAccessTestSupport;
 import nablarch.test.core.reader.TestDataParser;
-import org.apache.poi.ss.usermodel.Sheet;
-import org.apache.poi.ss.usermodel.Workbook;
-import org.apache.poi.ss.usermodel.WorkbookFactory;
 import org.junit.Before;
 
-import java.io.File;
 import java.io.InputStream;
 import java.io.ByteArrayOutputStream;
 import java.nio.charset.Charset;
@@ -207,11 +203,16 @@ public class RestTestSupport extends SimpleRestTestSupport {
         dbSupport.assertTableEquals(message, sheetName, groupId, failIfNoDataFound);
     }
 
-    /** テストデータのExcelファイルが存在するか否か */
+    /**
+     * テストデータのリソースが存在するか否か。
+     * 一度存在しないと判定したら、以降は {@code testDataParser} に問い合わせず存在しないとみなす。
+     */
     private boolean testDataExists = true;
 
     /**
-     * sheetName に合致するリソースが存在するかを判定する。
+     * sheetName から組み立てたリソース名（テストクラスの単純名/sheetName）が存在するかを判定する。
+     * 存在の判定は {@code testDataParser} の {@code isResourceExisting()} に委ねる。
+     * 判定単位（ファイル単位かシート単位か）は {@code testDataParser} の実装に依存する。
      *
      * @param sheetName シート名
      * @return 存在する場合true
@@ -226,7 +227,7 @@ public class RestTestSupport extends SimpleRestTestSupport {
             testDataExists = false;
             return false;
         }
-        return getSheet(path, sheetName) != null;
+        return true;
     }
 
     /**
@@ -244,35 +245,6 @@ public class RestTestSupport extends SimpleRestTestSupport {
             }
         }
         return null;
-    }
-
-    /**
-     * 引数で渡されたパス配下にある実行中のテストクラスと同名のExcelファイルを読み込み
-     * シート名が一致するシートを返す。
-     *
-     * @param basePath  パス
-     * @param sheetName シート名
-     * @return 読み込んだ{@link Sheet}
-     */
-    private Sheet getSheet(String basePath, String sheetName) {
-        String filePath = basePath + '/' + testDescription.getTestClassSimpleName();
-        File file = new File(filePath + ".xlsx");
-        if (!file.exists()) {
-            file = new File(filePath + ".xls");
-        }
-        String absoluteFilePath = file.getAbsolutePath();
-        Workbook book;
-        InputStream in = null;
-        try {
-            String uri = new File(absoluteFilePath).toURI().toString();
-            in = FileUtil.getResource(uri);
-            book = WorkbookFactory.create(in);
-        } catch (Exception e) {
-            throw new RuntimeException("test data file open failed.", e);
-        } finally {
-            FileUtil.closeQuietly(in);
-        }
-        return book.getSheet(sheetName);
     }
 
     /**
