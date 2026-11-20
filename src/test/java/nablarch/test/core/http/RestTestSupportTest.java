@@ -33,6 +33,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -64,15 +65,15 @@ public class RestTestSupportTest {
         }
 
         /**
-         * .xlsxファイルが存在するがシートが存在しない場合、{@code setUpDb}が呼ばれるが例外が送出されないことを確認する。
-         * ファイル単位で存在確認するため、シートが存在しなくても{@code setUpDb}は呼ばれる。
-         * {@code dbSupport.setUpDb()}はシートが存在しない場合、空リストを返して自然にスキップする。
+         * .xlsxファイルが存在するがシートが存在しない場合、{@code setUpDb}が呼ばれ、例外が送出されずに終わることを確認する。
+         * データコンテナ単位で存在確認するため、シートが存在しなくても{@code setUpDb}は呼ばれる。
+         * シートが存在しない場合、{@code DbAccessTestSupport#setUpDb}は準備データが空のため何もせずに終わる。
          */
         @Test
         public void testSetUpDbIfSheetExists_XlsxFileSheetNotFound_callsSetUpDb() {
             final DbAccessTestSupport original = ReflectionUtil.getFieldValue(this, "dbSupport");
-            final DbAccessTestSupport spy = mock(DbAccessTestSupport.class,
-                    withSettings().spiedInstance(original).defaultAnswer(RETURNS_DEFAULTS));
+            // シートが無いときに実際に例外が出ないことを確認するため、実メソッドを呼ぶ spy にする
+            final DbAccessTestSupport spy = spy(original);
             ReflectionUtil.setFieldValue(this, "dbSupport", spy);
 
             setUpDbIfSheetExists("nonExistentSheet");
@@ -260,9 +261,9 @@ public class RestTestSupportTest {
         }
 
         /**
-         * .xlsファイルが存在するがシートが存在しない場合、{@code setUpDb}が呼ばれるが例外が送出されないことを確認する。
-         * ファイル単位で存在確認するため、シートが存在しなくても{@code setUpDb}は呼ばれる。
-         * {@code dbSupport.setUpDb()}はシートが存在しない場合、空リストを返して自然にスキップする。
+         * .xlsファイルが存在するがシートが存在しない場合、{@code setUpDb}が呼ばれ、例外が送出されずに終わることを確認する。
+         * データコンテナ単位で存在確認するため、シートが存在しなくても{@code setUpDb}は呼ばれる。
+         * シートが存在しない場合、{@code DbAccessTestSupport#setUpDb}は準備データが空のため何もせずに終わる。
          */
         @Test
         public void testSetUpDbIfSheetExists_XlsFileSheetNotFound_callsSetUpDb() {
@@ -270,8 +271,8 @@ public class RestTestSupportTest {
             setDummyDescription(RestTestSupport.class, sut);
 
             final DbAccessTestSupport original = ReflectionUtil.getFieldValue(sut, "dbSupport");
-            final DbAccessTestSupport spy = mock(DbAccessTestSupport.class,
-                    withSettings().spiedInstance(original).defaultAnswer(RETURNS_DEFAULTS));
+            // シートが無いときに実際に例外が出ないことを確認するため、実メソッドを呼ぶ spy にする
+            final DbAccessTestSupport spy = spy(original);
             ReflectionUtil.setFieldValue(sut, "dbSupport", spy);
 
             sut.setUpDbIfSheetExists("nonExistentSheet");
