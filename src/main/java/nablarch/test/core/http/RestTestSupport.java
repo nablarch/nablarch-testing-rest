@@ -204,15 +204,16 @@ public class RestTestSupport extends SimpleRestTestSupport {
     }
 
     /**
-     * テストデータのリソースが存在するか否か。
+     * テストクラスのデータコンテナが存在するか否か。
      * 一度存在しないと判定したら、以降は {@code testDataParser} に問い合わせず存在しないとみなす。
      */
     private boolean testDataExists = true;
 
     /**
-     * sheetName から組み立てたリソース名（テストクラスの単純名/sheetName）が存在するかを判定する。
-     * 存在の判定は {@code testDataParser} の {@code isResourceExisting()} に委ねる。
-     * 判定単位（ファイル単位かシート単位か）は {@code testDataParser} の実装に依存する。
+     * テストクラスのデータコンテナが存在するかを判定する。
+     * 存在の判定は {@code testDataParser} の {@link TestDataParser#isResourceExisting(String, String)} に委ねる。
+     * データコンテナ内に {@code sheetName} のデータセクションが存在するかは判定しない
+     * （存在しない場合は、委譲先の {@code setUpDb} が何もせずに終わる）。
      *
      * @param sheetName シート名
      * @return 存在する場合true

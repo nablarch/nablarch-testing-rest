@@ -348,9 +348,8 @@ public class RestTestSupportTest {
         /**
          * 一度 {@code isResourceExisting()} が false を返すと、以降のシートでは
          * {@code testDataParser} に問い合わせず {@code setUpDb} も呼ばれないことを確認する。
-         * {@code isResourceExisting()} の判定単位は {@code testDataParser} の実装に委ねられる
-         * （Excel 形式はファイル単位、YAML 形式はディレクトリ単位）ため、この振る舞いは
-         * 「1 つ目のシートが無いだけで 2 つ目が読まれない」ことを意味しない。
+         * {@code isResourceExisting()} はデータコンテナの存在を判定し、シートの有無は判定しないため、
+         * この振る舞いは「1 つ目のシートが無いだけで 2 つ目が読まれない」ことを意味しない。
          */
         @Test
         public void testSetUpDbIfSheetExists_onceNotExisting_doesNotAskParserAgain() {
